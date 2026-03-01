@@ -1,0 +1,80 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans), var(--font-inter), sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+  
+  --color-pulse-bg: #0A0A0F;
+  --color-pulse-surface: #111118;
+  --color-pulse-surface-raised: #1A1A24;
+  --color-pulse-border: #2A2A3A;
+  --color-pulse-primary: #6E7BF2;
+  --color-pulse-accent: #4ECDC4;
+  --color-pulse-accent-warm: #F7B731;
+  --color-pulse-danger: #FF6B6B;
+  --color-pulse-text-primary: #F0F0F5;
+  --color-pulse-text-secondary: #8888A0;
+  --color-pulse-text-muted: #4A4A5A;
+
+  --color-border: #2A2A3A;
+  --color-input: #1A1A24;
+  --color-ring: #6E7BF2;
+  --color-primary: #6E7BF2;
+  --color-accent: #4ECDC4;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --background: #0A0A0F;
+  --foreground: #F0F0F5;
+  --card: #111118;
+  --card-foreground: #F0F0F5;
+  --popover: #111118;
+  --popover-foreground: #F0F0F5;
+  --primary: #6E7BF2;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1A1A24;
+  --secondary-foreground: #F0F0F5;
+  --muted: #1A1A24;
+  --muted-foreground: #8888A0;
+  --accent: #4ECDC4;
+  --accent-foreground: #111118;
+  --destructive: #FF6B6B;
+  --border: #2A2A3A;
+  --input: #1A1A24;
+  --ring: #6E7BF2;
+  --radius: 1.0rem;
+}
+
+@layer base {
+  * {
+    @apply border-pulse-border;
+  }
+  body {
+    @apply bg-pulse-bg text-pulse-text-primary font-sans antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight font-light;
+  }
+}
+
+.pulse-gradient {
+  background: linear-gradient(to right, #6E7BF2, #4ECDC4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.pulse-dot-grid {
+  background-image: radial-gradient(#2A2A3A 1px, transparent 1px);
+  background-size: 24px 24px;
+}
