@@ -244,7 +244,20 @@ export default function ConstellationPage() {
       const matchResult = await api.constellationMatch(token);
 
       if (!matchResult.match_found) {
-        alert("No match found. Please try again in a moment.");
+        // DEMO MODE: Use shared demo room for testing with 2 browsers
+        console.log("No backend match - using shared demo room");
+        const demoRoomId = "demo-room-shared";
+        const demoSessionId = `demo-session-${Date.now()}`;
+
+        setActiveSession({
+          roomId: demoRoomId,
+          sessionId: demoSessionId,
+          context:
+            DEMO_MATCHES.find((m) => m.id === matchId)?.context ||
+            "Demo peer support session",
+          similarity:
+            DEMO_MATCHES.find((m) => m.id === matchId)?.similarity || 0.85,
+        });
         setMatching(false);
         return;
       }
@@ -263,7 +276,17 @@ export default function ConstellationPage() {
       });
     } catch (error) {
       console.error("Failed to start session:", error);
-      alert("Failed to start session. Please try again.");
+      // Fallback to demo mode on any error
+      console.log("Error occurred - using shared demo room");
+      const demoRoomId = "demo-room-shared";
+      const demoSessionId = `demo-session-${Date.now()}`;
+
+      setActiveSession({
+        roomId: demoRoomId,
+        sessionId: demoSessionId,
+        context: "Demo peer support session - testing WebRTC connection",
+        similarity: 0.85,
+      });
     } finally {
       setMatching(false);
     }

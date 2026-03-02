@@ -53,7 +53,9 @@ export default function CircadianPage() {
       await loadDashboard();
     } catch (error) {
       console.error("Failed to extract features:", error);
-      alert("Failed to extract features. Make sure you have sleep data logged.");
+      alert(
+        "Failed to extract features. Make sure you have sleep data logged.",
+      );
     } finally {
       setExtracting(false);
     }
@@ -100,7 +102,8 @@ export default function CircadianPage() {
                 Circadian Rhythm
               </h1>
               <p className="text-pulse-text-muted text-sm max-w-xl">
-                Deep analysis of your sleep patterns, consistency, and biological rhythm.
+                Deep analysis of your sleep patterns, consistency, and
+                biological rhythm.
               </p>
             </div>
             <div className="flex gap-2">
@@ -145,7 +148,10 @@ export default function CircadianPage() {
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-32 bg-pulse-surface border border-pulse-border rounded-xl animate-pulse" />
+                <div
+                  key={i}
+                  className="h-32 bg-pulse-surface border border-pulse-border rounded-xl animate-pulse"
+                />
               ))}
             </div>
           ) : (
@@ -164,7 +170,9 @@ export default function CircadianPage() {
                       ? `${Math.floor(summary.avg_sleep_duration_mins / 60)}h ${summary.avg_sleep_duration_mins % 60}m`
                       : "—"}
                   </p>
-                  <p className="text-xs text-pulse-text-muted mt-1">Last 7 days</p>
+                  <p className="text-xs text-pulse-text-muted mt-1">
+                    Last 7 days
+                  </p>
                 </div>
 
                 <div className="bg-pulse-surface border border-pulse-border rounded-xl p-4">
@@ -179,7 +187,9 @@ export default function CircadianPage() {
                       ? `${Math.round(summary.avg_rhythm_consistency_pct)}%`
                       : "—"}
                   </p>
-                  <p className="text-xs text-pulse-text-muted mt-1">Rhythm score</p>
+                  <p className="text-xs text-pulse-text-muted mt-1">
+                    Rhythm score
+                  </p>
                 </div>
 
                 <div className="bg-pulse-surface border border-pulse-border rounded-xl p-4">
@@ -194,7 +204,9 @@ export default function CircadianPage() {
                       ? `${Math.round(summary.avg_sleep_debt_mins)}m`
                       : "—"}
                   </p>
-                  <p className="text-xs text-pulse-text-muted mt-1">Average deficit</p>
+                  <p className="text-xs text-pulse-text-muted mt-1">
+                    Average deficit
+                  </p>
                 </div>
 
                 <div className="bg-pulse-surface border border-pulse-border rounded-xl p-4">
@@ -205,9 +217,13 @@ export default function CircadianPage() {
                     </p>
                   </div>
                   <p className="text-2xl font-light text-pulse-text-primary">
-                    {summary.avg_sleep_score ? Math.round(summary.avg_sleep_score) : "—"}
+                    {summary.avg_sleep_score
+                      ? Math.round(summary.avg_sleep_score)
+                      : "—"}
                   </p>
-                  <p className="text-xs text-pulse-text-muted mt-1">Quality rating</p>
+                  <p className="text-xs text-pulse-text-muted mt-1">
+                    Quality rating
+                  </p>
                 </div>
               </div>
 
@@ -216,9 +232,15 @@ export default function CircadianPage() {
                 <div className="bg-pulse-surface border border-pulse-border rounded-xl p-6 mb-8">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h2 className="text-sm font-medium text-pulse-text-primary">AI-Generated Analysis</h2>
+                      <h2 className="text-sm font-medium text-pulse-text-primary">
+                        AI-Generated Analysis
+                      </h2>
                       <p className="text-xs text-pulse-text-muted mt-0.5">
-                        From {new Date(dashboard.latest_insight.week_start).toLocaleDateString()} · {dashboard.latest_insight.model_used}
+                        From{" "}
+                        {new Date(
+                          dashboard.latest_insight.week_start,
+                        ).toLocaleDateString()}{" "}
+                        · {dashboard.latest_insight.model_used}
                       </p>
                     </div>
                   </div>
@@ -226,40 +248,61 @@ export default function CircadianPage() {
                     {dashboard.latest_insight.narrative}
                   </p>
 
-                  {dashboard.latest_insight.interventions && dashboard.latest_insight.interventions.length > 0 && (
-                    <div className="space-y-3 pt-4 border-t border-pulse-border">
-                      <p className="text-xs font-medium text-pulse-text-primary uppercase tracking-wider">
-                        Recommended Interventions
-                      </p>
-                      {dashboard.latest_insight.interventions.map((int: any, i: number) => (
-                        <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-pulse-bg/50">
-                          <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${
-                            int.priority === "high" ? "bg-pulse-danger" :
-                            int.priority === "medium" ? "bg-pulse-accent-warm" :
-                            "bg-pulse-primary"
-                          }`} />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-pulse-text-primary">{int.title}</p>
-                            <p className="text-xs text-pulse-text-muted mt-0.5">{int.description}</p>
-                          </div>
-                          <span className={`text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${
-                            int.priority === "high" ? "bg-pulse-danger/10 text-pulse-danger border border-pulse-danger/20" :
-                            int.priority === "medium" ? "bg-pulse-accent-warm/10 text-pulse-accent-warm border border-pulse-accent-warm/20" :
-                            "bg-pulse-primary/10 text-pulse-primary border border-pulse-primary/20"
-                          }`}>
-                            {int.priority}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  {dashboard.latest_insight.interventions &&
+                    dashboard.latest_insight.interventions.length > 0 && (
+                      <div className="space-y-3 pt-4 border-t border-pulse-border">
+                        <p className="text-xs font-medium text-pulse-text-primary uppercase tracking-wider">
+                          Recommended Interventions
+                        </p>
+                        {dashboard.latest_insight.interventions.map(
+                          (int: any, i: number) => (
+                            <div
+                              key={i}
+                              className="flex items-start gap-3 p-3 rounded-lg bg-pulse-bg/50"
+                            >
+                              <div
+                                className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${
+                                  int.priority === "high"
+                                    ? "bg-pulse-danger"
+                                    : int.priority === "medium"
+                                      ? "bg-pulse-accent-warm"
+                                      : "bg-pulse-primary"
+                                }`}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-pulse-text-primary">
+                                  {int.title}
+                                </p>
+                                <p className="text-xs text-pulse-text-muted mt-0.5">
+                                  {int.description}
+                                </p>
+                              </div>
+                              <span
+                                className={`text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${
+                                  int.priority === "high"
+                                    ? "bg-pulse-danger/10 text-pulse-danger border border-pulse-danger/20"
+                                    : int.priority === "medium"
+                                      ? "bg-pulse-accent-warm/10 text-pulse-accent-warm border border-pulse-accent-warm/20"
+                                      : "bg-pulse-primary/10 text-pulse-primary border border-pulse-primary/20"
+                                }`}
+                              >
+                                {int.priority}
+                              </span>
+                            </div>
+                          ),
+                        )}
+                      </div>
+                    )}
                 </div>
               ) : (
                 <div className="bg-pulse-surface border border-pulse-border rounded-xl p-12 mb-8 text-center">
                   <Clock className="w-12 h-12 text-pulse-text-muted mx-auto mb-3 opacity-30" />
-                  <p className="text-sm text-pulse-text-muted">No circadian analysis yet</p>
+                  <p className="text-sm text-pulse-text-muted">
+                    No circadian analysis yet
+                  </p>
                   <p className="text-xs text-pulse-text-muted mt-1 mb-4">
-                    Log sleep data and click "Generate Analysis" to get AI-powered insights
+                    Log sleep data and click "Generate Analysis" to get
+                    AI-powered insights
                   </p>
                   <Button
                     onClick={handleGenerateNarrative}
@@ -285,40 +328,47 @@ export default function CircadianPage() {
               {/* Timeline */}
               {dashboard?.timeline && dashboard.timeline.length > 0 && (
                 <div className="bg-pulse-surface border border-pulse-border rounded-xl p-6">
-                  <h2 className="text-sm font-medium text-pulse-text-primary mb-4">30-Day Timeline</h2>
+                  <h2 className="text-sm font-medium text-pulse-text-primary mb-4">
+                    30-Day Timeline
+                  </h2>
                   <div className="space-y-2">
-                    {dashboard.timeline.slice(0, 10).map((day: any, i: number) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.05 }}
-                        className="flex items-center gap-4 p-3 rounded-lg hover:bg-pulse-bg/50 transition-colors"
-                      >
-                        <p className="text-sm text-pulse-text-secondary w-24">
-                          {new Date(day.date).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </p>
-                        <div className="flex-1 flex items-center gap-2">
-                          <div className="flex-1 h-1.5 bg-pulse-border rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-pulse-primary rounded-full"
-                              style={{ width: `${(day.sleep_duration_mins / 600) * 100}%` }}
-                            />
+                    {dashboard.timeline
+                      .slice(0, 10)
+                      .map((day: any, i: number) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          className="flex items-center gap-4 p-3 rounded-lg hover:bg-pulse-bg/50 transition-colors"
+                        >
+                          <p className="text-sm text-pulse-text-secondary w-24">
+                            {new Date(day.date).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </p>
+                          <div className="flex-1 flex items-center gap-2">
+                            <div className="flex-1 h-1.5 bg-pulse-border rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-pulse-primary rounded-full"
+                                style={{
+                                  width: `${(day.sleep_duration_mins / 600) * 100}%`,
+                                }}
+                              />
+                            </div>
+                            <span className="text-xs text-pulse-text-muted w-16 text-right">
+                              {Math.floor(day.sleep_duration_mins / 60)}h{" "}
+                              {day.sleep_duration_mins % 60}m
+                            </span>
                           </div>
-                          <span className="text-xs text-pulse-text-muted w-16 text-right">
-                            {Math.floor(day.sleep_duration_mins / 60)}h {day.sleep_duration_mins % 60}m
-                          </span>
-                        </div>
-                        {day.rhythm_consistency_pct && (
-                          <span className="text-xs text-pulse-text-muted w-12 text-right">
-                            {Math.round(day.rhythm_consistency_pct)}%
-                          </span>
-                        )}
-                      </motion.div>
-                    ))}
+                          {day.rhythm_consistency_pct && (
+                            <span className="text-xs text-pulse-text-muted w-12 text-right">
+                              {Math.round(day.rhythm_consistency_pct)}%
+                            </span>
+                          )}
+                        </motion.div>
+                      ))}
                   </div>
                 </div>
               )}
