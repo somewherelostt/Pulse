@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -32,7 +33,7 @@ type SupabaseAuthResponse struct {
 }
 
 func (h *AuthHandler) Anonymous(w http.ResponseWriter, r *http.Request) {
-	// Call Supabase signInAnonymously
+	// Proxy anonymous sign-in to Supabase
 	supabaseURL := os.Getenv("SUPABASE_URL")
 	anonKey := os.Getenv("SUPABASE_ANON_KEY")
 
@@ -42,8 +43,12 @@ func (h *AuthHandler) Anonymous(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Supabase anonymous sign-in via signInAnonymously endpoint
 	authURL := supabaseURL + "/auth/v1/signup"
-	req, err := http.NewRequest("POST", authURL, nil)
+	
+	// Empty JSON body for anonymous signup
+	payload := []byte(`{"data":{}}`)
+	req, err := http.NewRequestWithContext(r.Context(), "POST", authURL, 	bytes.NewBuffer(payload))
 	if err != nil {
 		slog.Error("failed to create auth request", "error", err)
 		writeErr(w, http.StatusInternalServerError, "auth request failed", "INTERNAL_ERROR")
@@ -52,17 +57,18 @@ func (h *AuthHandler) Anonymous(w http.ResponseWriter, r *http.Request) {
 
 	req.Header.Set("apikey", anonKey)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+anonKey)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		slog.Error("failed to call supabase auth", "error", err)
+		slog.Error("failed to call supabase auth", "error", err, "url", authURL)
 		writeErr(w, http.StatusInternalServerError, "auth call failed", "INTERNAL_ERROR")
 		return
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		slog.Error("supabase auth failed", "status", resp.StatusCode)
 		writeErr(w, http.StatusInternalServerError, "auth failed", "AUTH_ERROR")
 		return
