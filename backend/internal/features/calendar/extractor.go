@@ -4,14 +4,6 @@ import (
 	"time"
 )
 
-// EventRow is the DB row shape we get from raw_calendar_events for a single day.
-type EventRow struct {
-	Start        time.Time
-	End          time.Time
-	AttendeeCount int
-	IsAllDay     bool
-}
-
 // ExtractForDay computes daily features from events for one day.
 func ExtractForDay(events []EventRow, date time.Time, workStartHour, workEndHour int) DailyFeatures {
 	loc := date.Location()
