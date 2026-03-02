@@ -2,11 +2,13 @@ package api
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"pulse-api/internal/db"
 	"pulse-api/internal/middleware"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type UserHandler struct {
@@ -25,6 +27,7 @@ func (h *UserHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 	}
 	u, err := db.UserBySupabaseUID(r.Context(), h.Pool, supabaseUID)
 	if err != nil {
+		slog.Error("failed to get user", "error", err, "supabase_uid", supabaseUID)
 		writeErr(w, http.StatusInternalServerError, "failed to get user", "INTERNAL_ERROR")
 		return
 	}
@@ -67,6 +70,7 @@ func (h *UserHandler) UpsertMe(w http.ResponseWriter, r *http.Request) {
 	}
 	u, err := db.UpsertUser(r.Context(), h.Pool, supabaseUID, tz, workStart, workEnd)
 	if err != nil {
+		slog.Error("failed to upsert user", "error", err, "supabase_uid", supabaseUID, "timezone", tz)
 		writeErr(w, http.StatusInternalServerError, "failed to upsert user", "INTERNAL_ERROR")
 		return
 	}
