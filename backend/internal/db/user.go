@@ -34,9 +34,9 @@ func UpsertUser(ctx context.Context, pool *pgxpool.Pool, supabaseUID string, tim
 		insert into public.users (supabase_uid, timezone, work_start_hour, work_end_hour, updated_at)
 		values ($1::uuid, $2, $3, $4, now())
 		on conflict (supabase_uid) do update set
-			timezone = coalesce(excluded.timezone, users.timezone),
-			work_start_hour = coalesce($3, users.work_start_hour),
-			work_end_hour = coalesce($4, users.work_end_hour),
+			timezone = excluded.timezone,
+			work_start_hour = excluded.work_start_hour,
+			work_end_hour = excluded.work_end_hour,
 			updated_at = now()
 	`, supabaseUID, timezone, workStart, workEnd)
 	if err != nil {
