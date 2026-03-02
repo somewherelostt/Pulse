@@ -1,16 +1,18 @@
 package api
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-	"golang.org/x/oauth2"
 	"pulse-api/internal/collectors/google"
 	"pulse-api/internal/db"
 	"pulse-api/internal/middleware"
 	"pulse-api/internal/pipeline"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+	"golang.org/x/oauth2"
 )
 
 type CalendarHandler struct {
@@ -78,6 +80,10 @@ func (h *CalendarHandler) Callback(w http.ResponseWriter, r *http.Request) {
 	}
 	// Mark calendar consent
 	_ = db.UpdateUserOnboarding(r.Context(), h.Pool, u.ID, true)
+	
+	// Trigger sync immediately in background
+	go h.syncCalendar(u, token)
+	
 	http.Redirect(w, r, h.FrontendURL+"/onboarding?step=2&syncing=true", http.StatusFound)
 }
 
@@ -176,3 +182,72 @@ func (h *CalendarHandler) Sync(w http.ResponseWriter, r *http.Request) {
 }
 
 func ptr(s string) *string { return &s }
+
+func (h *CalendarHandler) syncCalendar(u *db.User, token *oauth2.Token) {
+	ctx := context.Background()
+	
+	// Refresh if needed
+	newTok, err := google.RefreshToken(ctx, h.OAuthConfig, token)
+	if err != nil {
+		slog.Error("background sync: token refresh failed", "user_id", u.ID, "err", err)
+		_ = db.UpsertSyncLog(ctx, h.Pool, u.ID, "google", "error", 0, ptr("token refresh failed"))
+		return
+	}
+	
+	// Update stored token if refreshed
+	if newTok.AccessToken != token.AccessToken {
+		var newExp *time.Time
+		if !newTok.Expiry.IsZero() {
+			t := newTok.Expiry
+			newExp = &t
+		}
+		_ = db.SetOAuthToken(ctx, h.Pool, u.ID, "google", newTok.AccessToken, newTok.RefreshToken, newExp)
+	}
+	
+	// Fetch calendar events
+	svc, err := google.NewCalendarService(ctx, newTok, h.OAuthConfig)
+	if err != nil {
+		slog.Error("background sync: calendar service failed", "user_id", u.ID, "err", err)
+		_ = db.UpsertSyncLog(ctx, h.Pool, u.ID, "google", "error", 0, ptr("calendar service failed"))
+		return
+	}
+	
+	events, err := google.FetchEvents(ctx, svc, h.LookbackDays)
+	if err != nil {
+		slog.Error("background sync: fetch events failed", "user_id", u.ID, "err", err)
+		_ = db.UpsertSyncLog(ctx, h.Pool, u.ID, "google", "error", 0, ptr(err.Error()))
+		return
+	}
+	
+	// Store raw events
+	var rawEvents []db.RawCalendarEvent
+	for _, e := range events {
+		titleHash := pipeline.HashTitle(e.Title)
+		durationMins := e.End.Sub(e.Start).Minutes()
+		afterHours := e.Start.Hour() < u.WorkStartHour || e.Start.Hour() >= u.WorkEndHour
+		isWeekend := e.Start.Weekday() == 0 || e.Start.Weekday() == 6
+		rawEvents = append(rawEvents, db.RawCalendarEvent{
+			GoogleEventID: e.ID,
+			TitleHash:     &titleHash,
+			StartTime:     e.Start,
+			EndTime:       e.End,
+			AttendeeCount: e.Attendees,
+			IsAllDay:      e.IsAllDay,
+			IsRecurring:   e.IsRecurring,
+			IsAfterHours:  afterHours,
+			IsWeekend:     isWeekend,
+			DurationMins:  durationMins,
+		})
+	}
+	
+	if err := db.UpsertRawEvents(ctx, h.Pool, u.ID, rawEvents); err != nil {
+		slog.Error("background sync: upsert raw events failed", "user_id", u.ID, "err", err)
+	}
+	
+	// Extract features
+	_ = pipeline.ExtractAndStoreFeatures(ctx, h.Pool, u.ID, u.WorkStartHour, u.WorkEndHour)
+	
+	count := len(events)
+	_ = db.UpsertSyncLog(ctx, h.Pool, u.ID, "google", "success", count, nil)
+	slog.Info("background sync completed", "user_id", u.ID, "events_fetched", count)
+}
