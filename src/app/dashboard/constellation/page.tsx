@@ -242,7 +242,7 @@ export default function ConstellationPage() {
     try {
       // First get a match
       const matchResult = await api.constellationMatch(token);
-      
+
       if (!matchResult.match_found) {
         alert("No match found. Please try again in a moment.");
         setMatching(false);
@@ -250,8 +250,11 @@ export default function ConstellationPage() {
       }
 
       // Start the session
-      const sessionResult = await api.constellationSessionStart(token, matchResult.match_id!);
-      
+      const sessionResult = await api.constellationSessionStart(
+        token,
+        matchResult.match_id!,
+      );
+
       setActiveSession({
         roomId: sessionResult.room_id,
         sessionId: matchResult.match_id!,
@@ -274,7 +277,12 @@ export default function ConstellationPage() {
   const handleRateSession = async (rating: number, wouldTalkAgain: boolean) => {
     if (!token || !showRating) return;
     try {
-      await api.constellationSessionRate(token, showRating, rating, wouldTalkAgain);
+      await api.constellationSessionRate(
+        token,
+        showRating,
+        rating,
+        wouldTalkAgain,
+      );
       setShowRating(null);
       setSelectedMatch(null);
     } catch (error) {
@@ -299,7 +307,9 @@ export default function ConstellationPage() {
     return (
       <div className="min-h-screen bg-pulse-bg flex items-center justify-center p-6">
         <div className="max-w-md w-full bg-pulse-surface border border-pulse-border rounded-xl p-6">
-          <h2 className="text-lg font-medium text-pulse-text-primary mb-2">How was the session?</h2>
+          <h2 className="text-lg font-medium text-pulse-text-primary mb-2">
+            How was the session?
+          </h2>
           <p className="text-sm text-pulse-text-muted mb-6">
             Your feedback helps improve matching for everyone.
           </p>
@@ -565,7 +575,7 @@ export default function ConstellationPage() {
                                   <p className="text-xs text-pulse-text-secondary mb-3 pt-2 border-t border-pulse-border/50">
                                     {match.context}
                                   </p>
-                                  <button 
+                                  <button
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleRequestSession(match.id);

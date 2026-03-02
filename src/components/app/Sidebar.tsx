@@ -11,6 +11,8 @@ import {
   Lightbulb,
   Lock,
   Network,
+  Moon,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -20,6 +22,8 @@ const NAV = [
   { href: "/dashboard#calendar", label: "Calendar", icon: Calendar },
   { href: "/log", label: "Mood Log", icon: Heart },
   { href: "/dashboard#insights", label: "Insights", icon: Lightbulb },
+  { href: "/dashboard/sleep", label: "Sleep", icon: Moon },
+  { href: "/dashboard/circadian", label: "Circadian", icon: Clock },
   {
     href: "/dashboard/constellation",
     label: "Constellation",

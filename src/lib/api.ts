@@ -148,4 +148,72 @@ export const api = {
         token,
       },
     ),
+
+  // Sleep tracking APIs
+  sleepLogManual: (
+    token: string,
+    data: {
+      date: string;
+      bedtime_hour: number;
+      bedtime_min: number;
+      wake_hour: number;
+      wake_min: number;
+      sleep_score?: number;
+    },
+  ) =>
+    apiFetch<{ date: string; total_mins: number; provider: string }>(
+      "/api/v1/sleep/manual",
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+        token,
+      },
+    ),
+
+  sleepGetRange: (token: string, from?: string, to?: string) =>
+    apiFetch<
+      Array<{
+        date: string;
+        provider: string;
+        total_mins: number;
+        rem_mins?: number;
+        deep_mins?: number;
+        bedtime?: string;
+        wake_time?: string;
+        sleep_score?: number;
+        hrv?: number;
+        resting_hr?: number;
+      }>
+    >(
+      `/api/v1/sleep/range?${new URLSearchParams({ ...(from && { from }), ...(to && { to }) }).toString()}`,
+      { token },
+    ),
+
+  // Circadian rhythm APIs
+  circadianDashboard: (token: string) =>
+    apiFetch<{
+      timeline: Array<any>;
+      summary: any;
+      latest_insight: any;
+    }>("/api/v1/circadian/dashboard", { token }),
+
+  circadianExtractFeatures: (token: string) =>
+    apiFetch<{ extracted_days: number }>("/api/v1/circadian/extract", {
+      method: "POST",
+      token,
+    }),
+
+  circadianGenerateNarrative: (token: string) =>
+    apiFetch<{
+      narrative: string;
+      interventions: Array<{
+        title: string;
+        description: string;
+        priority: string;
+      }>;
+      model_used: string;
+    }>("/api/v1/circadian/narrative", {
+      method: "POST",
+      token,
+    }),
 };
