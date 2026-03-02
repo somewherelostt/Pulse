@@ -6,12 +6,6 @@ import { usePathname } from "next/navigation";
 import { Activity, LayoutDashboard, Calendar, Heart, Lightbulb, Lock, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 const NAV = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -19,10 +13,6 @@ const NAV = [
   { href: "/log", label: "Mood Log", icon: Heart },
   { href: "/dashboard#insights", label: "Insights", icon: Lightbulb },
   { href: "/dashboard/constellation", label: "Constellation", icon: Network, badge: "New" },
-];
-const LOCKED = [
-  { label: "Sleep", sub: "Coming in Layer 2", icon: Lock },
-  { label: "Browser", sub: "Coming in Layer 3", icon: Lock },
 ];
 
 export function Sidebar({ moodLoggedToday }: { moodLoggedToday: boolean }) {
@@ -59,19 +49,6 @@ export function Sidebar({ moodLoggedToday }: { moodLoggedToday: boolean }) {
             </Link>
           );
         })}
-        <TooltipProvider>
-          {LOCKED.map(({ label, sub, icon: Icon }) => (
-            <Tooltip key={label}>
-              <TooltipTrigger asChild>
-                <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-pulse-text-muted cursor-not-allowed opacity-60">
-                  <Icon className="w-4 h-4 shrink-0" />
-                  {label}
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="right">{sub}</TooltipContent>
-            </Tooltip>
-          ))}
-        </TooltipProvider>
       </nav>
 
       <div className="p-3 border-t border-pulse-border space-y-2">

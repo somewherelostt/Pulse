@@ -145,19 +145,9 @@ export default function DashboardPage() {
           {/* Header */}
           <div className="flex items-start justify-between mb-8">
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-light text-pulse-text-primary">
-                  {greeting()}
-                </h1>
-                {data &&
-                  (data.metrics.data_days ?? 0) >= 7 &&
-                  data.timeline &&
-                  data.timeline.length === 30 && (
-                    <span className="text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-pulse-accent/15 text-pulse-accent border border-pulse-accent/20">
-                      Demo Mode
-                    </span>
-                  )}
-              </div>
+              <h1 className="text-2xl font-light text-pulse-text-primary">
+                {greeting()}
+              </h1>
               <p className="text-pulse-text-muted text-sm mt-0.5">
                 {new Date().toLocaleDateString("en-US", {
                   weekday: "long",
