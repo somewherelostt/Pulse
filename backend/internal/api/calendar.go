@@ -145,7 +145,11 @@ func (h *CalendarHandler) Sync(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusInternalServerError, "calendar service failed", "CALENDAR_ERROR")
 		return
 	}
-	events, err := google.FetchEvents(r.Context(), svc, h.LookbackDays)
+	loc, _ := time.LoadLocation(u.Timezone)
+	if loc == nil {
+		loc = time.UTC
+	}
+	events, err := google.FetchEvents(r.Context(), svc, h.LookbackDays, loc)
 	if err != nil {
 		_ = db.UpsertSyncLog(r.Context(), h.Pool, u.ID, "google", "error", 0, ptr(err.Error()))
 		writeErr(w, http.StatusInternalServerError, "calendar fetch failed", "FETCH_FAILED")
@@ -212,7 +216,11 @@ func (h *CalendarHandler) syncCalendar(u *db.User, token *oauth2.Token) {
 		return
 	}
 	
-	events, err := google.FetchEvents(ctx, svc, h.LookbackDays)
+	loc, _ := time.LoadLocation(u.Timezone)
+	if loc == nil {
+		loc = time.UTC
+	}
+	events, err := google.FetchEvents(ctx, svc, h.LookbackDays, loc)
 	if err != nil {
 		slog.Error("background sync: fetch events failed", "user_id", u.ID, "err", err)
 		_ = db.UpsertSyncLog(ctx, h.Pool, u.ID, "google", "error", 0, ptr(err.Error()))

@@ -36,7 +36,11 @@ func (h *CircadianHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := r.Context()
-	now := time.Now()
+	loc, _ := time.LoadLocation(u.Timezone)
+	if loc == nil {
+		loc = time.UTC
+	}
+	now := time.Now().In(loc)
 	from := now.AddDate(0, 0, -30)
 
 	features, err := db.GetCircadianFeatures(ctx, h.Pool, u.ID, from, now)
@@ -86,7 +90,11 @@ func (h *CircadianHandler) GenerateNarrative(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	ctx := r.Context()
-	now := time.Now()
+	loc, _ := time.LoadLocation(u.Timezone)
+	if loc == nil {
+		loc = time.UTC
+	}
+	now := time.Now().In(loc)
 	from := now.AddDate(0, 0, -14)
 
 	features, err := db.GetCircadianFeatures(ctx, h.Pool, u.ID, from, now)
@@ -145,7 +153,11 @@ func (h *CircadianHandler) ExtractFeatures(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	ctx := r.Context()
-	now := time.Now()
+	loc, _ := time.LoadLocation(u.Timezone)
+	if loc == nil {
+		loc = time.UTC
+	}
+	now := time.Now().In(loc)
 	from := now.AddDate(0, 0, -30)
 
 	sessions, err := db.GetSleepSessions(ctx, h.Pool, u.ID, from, now)

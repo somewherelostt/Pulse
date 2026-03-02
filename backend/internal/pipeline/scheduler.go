@@ -48,7 +48,7 @@ func StartScheduler(ctx context.Context, pool *pgxpool.Pool, oauthConfig *oauth2
 func syncAllCalendars(ctx context.Context, pool *pgxpool.Pool, oauthConfig *oauth2.Config, lookbackDays int) {
 	// Get all users with google oauth tokens
 	rows, err := pool.Query(ctx, `
-		select u.id::text, u.work_start_hour, u.work_end_hour,
+		select u.id::text, u.timezone, u.work_start_hour, u.work_end_hour,
 		       ot.access_token, ot.refresh_token, ot.token_expiry
 		from public.users u
 		join public.oauth_tokens ot on ot.user_id = u.id and ot.provider = 'google'
@@ -61,6 +61,7 @@ func syncAllCalendars(ctx context.Context, pool *pgxpool.Pool, oauthConfig *oaut
 
 	type userToken struct {
 		UserID    string
+		Timezone  string
 		WorkStart int
 		WorkEnd   int
 		Access    string
@@ -71,7 +72,7 @@ func syncAllCalendars(ctx context.Context, pool *pgxpool.Pool, oauthConfig *oaut
 	var users []userToken
 	for rows.Next() {
 		var ut userToken
-		if err := rows.Scan(&ut.UserID, &ut.WorkStart, &ut.WorkEnd, &ut.Access, &ut.Refresh, &ut.Expiry); err != nil {
+		if err := rows.Scan(&ut.UserID, &ut.Timezone, &ut.WorkStart, &ut.WorkEnd, &ut.Access, &ut.Refresh, &ut.Expiry); err != nil {
 			continue
 		}
 		users = append(users, ut)
@@ -84,7 +85,7 @@ func syncAllCalendars(ctx context.Context, pool *pgxpool.Pool, oauthConfig *oaut
 		sem <- struct{}{}
 		go func() {
 			defer func() { <-sem }()
-			syncOneUser(ctx, pool, oauthConfig, ut.UserID, ut.Access, ut.Refresh, ut.Expiry, lookbackDays, ut.WorkStart, ut.WorkEnd)
+			syncOneUser(ctx, pool, oauthConfig, ut.UserID, ut.Timezone, ut.Access, ut.Refresh, ut.Expiry, lookbackDays, ut.WorkStart, ut.WorkEnd)
 		}()
 	}
 	// Drain semaphore to wait for all goroutines
@@ -97,7 +98,7 @@ func syncOneUser(
 	ctx context.Context,
 	pool *pgxpool.Pool,
 	oauthConfig *oauth2.Config,
-	userID, access, refresh string,
+	userID, timezone, access, refresh string,
 	expiry *time.Time,
 	lookbackDays, workStart, workEnd int,
 ) {
@@ -126,7 +127,11 @@ func syncOneUser(
 		slog.Error("cron: calendar service failed", "user_id", userID[:8], "err", err)
 		return
 	}
-	events, err := google.FetchEvents(ctx, svc, lookbackDays)
+	loc, _ := time.LoadLocation(timezone)
+	if loc == nil {
+		loc = time.UTC
+	}
+	events, err := google.FetchEvents(ctx, svc, lookbackDays, loc)
 	if err != nil {
 		_ = db.UpsertSyncLog(ctx, pool, userID, "google", "error", 0, ptrStr(err.Error()))
 		slog.Error("cron: fetch events failed", "user_id", userID[:8], "err", err)

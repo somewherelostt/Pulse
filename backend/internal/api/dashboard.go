@@ -31,7 +31,11 @@ func (h *DashboardHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	now := time.Now()
+	loc, _ := time.LoadLocation(u.Timezone)
+	if loc == nil {
+		loc = time.UTC
+	}
+	now := time.Now().In(loc)
 	from30 := now.AddDate(0, 0, -30)
 	from7 := now.AddDate(0, 0, -7)
 	from14 := now.AddDate(0, 0, -14)

@@ -9,9 +9,10 @@ import (
 	"google.golang.org/api/calendar/v3"
 )
 
-func FetchEvents(ctx context.Context, svc *calendar.Service, lookbackDays int) ([]Event, error) {
-	timeMin := time.Now().AddDate(0, 0, -lookbackDays).Format(time.RFC3339)
-	timeMax := time.Now().AddDate(0, 0, 1).Format(time.RFC3339)
+func FetchEvents(ctx context.Context, svc *calendar.Service, lookbackDays int, userLocation *time.Location) ([]Event, error) {
+	now := time.Now().In(userLocation)
+	timeMin := now.AddDate(0, 0, -lookbackDays).Format(time.RFC3339)
+	timeMax := now.AddDate(0, 0, 1).Format(time.RFC3339)
 
 	var all []Event
 	pageToken := ""

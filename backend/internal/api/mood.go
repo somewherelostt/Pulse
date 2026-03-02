@@ -70,8 +70,12 @@ func (h *MoodHandler) GetToday(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusInternalServerError, "failed to get user", "INTERNAL_ERROR")
 		return
 	}
-	now := time.Now()
-	date := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	loc, _ := time.LoadLocation(u.Timezone)
+	if loc == nil {
+		loc = time.UTC
+	}
+	now := time.Now().In(loc)
+	date := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
 	m, err := db.GetMoodByDate(r.Context(), h.Pool, u.ID, date)
 	if err != nil {
 		writeJSON(w, http.StatusOK, nil)
