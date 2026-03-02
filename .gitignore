@@ -53,3 +53,13 @@ PULSE_IDEA_ANALYSIS_AND_REFERENCE.md
 *.swp
 *.swo
 *~
+
+# AI assistants
+.claude/
+.cursor/
+
+# Go binaries and build artifacts
+backend/bin/
+*.exe
+*.test
+*.out
