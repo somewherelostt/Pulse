@@ -24,14 +24,22 @@ type Config struct {
 
 	GroqAPIKey    string
 	GroqModel     string
+	GroqBaseURL   string
 	CerebrasKey   string
 	CerebrasModel string
+	CerebrasBaseURL string
 	LLMTimeoutSec int
 	LLMMaxTokens  int
 
-	SyncIntervalHours      int
-	CalendarLookbackDays   int
+	SyncIntervalHours        int
+	CalendarLookbackDays     int
 	CorrelationMinDatapoints int
+
+	// Sleep providers
+	OuraToken          string
+	FitbitClientID     string
+	FitbitClientSecret string
+	FitbitRedirectURI  string
 }
 
 func Load() (*Config, error) {
@@ -50,16 +58,23 @@ func Load() (*Config, error) {
 		GoogleClientSecret: getStr("GOOGLE_CLIENT_SECRET", ""),
 		GoogleRedirectURI:  getStr("GOOGLE_REDIRECT_URI", "http://localhost:8080/api/v1/calendar/callback"),
 
-		GroqAPIKey:    getStr("GROQ_API_KEY", ""),
-		GroqModel:     getStr("GROQ_MODEL", "llama-3.3-70b-versatile"),
-		CerebrasKey:   getStr("CEREBRAS_API_KEY", ""),
-		CerebrasModel: getStr("CEREBRAS_MODEL", "cerebras/GLM-4-32B"),
+		GroqAPIKey:      getStr("GROQ_API_KEY", ""),
+		GroqModel:       getStr("GROQ_MODEL", "llama-3.3-70b-versatile"),
+		GroqBaseURL:     getStr("GROQ_BASE_URL", "https://api.groq.com/openai/v1"),
+		CerebrasKey:     getStr("CEREBRAS_API_KEY", ""),
+		CerebrasModel:   getStr("CEREBRAS_MODEL", "llama3.1-70b"),
+		CerebrasBaseURL: getStr("CEREBRAS_BASE_URL", "https://api.cerebras.ai/v1"),
 		LLMTimeoutSec: getInt("LLM_TIMEOUT_SECONDS", 30),
 		LLMMaxTokens:  getInt("LLM_MAX_TOKENS", 1024),
 
 		SyncIntervalHours:        getInt("SYNC_INTERVAL_HOURS", 6),
 		CalendarLookbackDays:      getInt("CALENDAR_LOOKBACK_DAYS", 30),
 		CorrelationMinDatapoints:  getInt("CORRELATION_MIN_DATAPOINTS", 7),
+
+		OuraToken:          getStr("OURA_PERSONAL_TOKEN", ""),
+		FitbitClientID:     getStr("FITBIT_CLIENT_ID", ""),
+		FitbitClientSecret: getStr("FITBIT_CLIENT_SECRET", ""),
+		FitbitRedirectURI:  getStr("FITBIT_REDIRECT_URI", "http://localhost:8080/api/v1/sleep/fitbit/callback"),
 	}
 	return c, nil
 }
