@@ -12,6 +12,7 @@ func NewRouter(
 	corsMw func(http.Handler) http.Handler,
 	logMw func(http.Handler) http.Handler,
 	recMw func(http.Handler) http.Handler,
+	authHandler *AuthHandler,
 	userHandler *UserHandler,
 	calendarHandler *CalendarHandler,
 	moodHandler *MoodHandler,
@@ -40,6 +41,7 @@ func NewRouter(
 	r.Get("/circadian", serveFile("web/circadian.html"))
 
 	r.Route("/api/v1", func(r chi.Router) {
+		r.Post("/auth/anonymous", authHandler.Anonymous)
 		r.Get("/calendar/callback", calendarHandler.Callback)
 
 		r.Group(func(r chi.Router) {

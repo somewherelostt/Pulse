@@ -61,6 +61,7 @@ func run() error {
 	recMw := middleware.Recover
 
 	// Build handlers
+	authHandler := api.NewAuthHandler(pool)
 	userHandler := api.NewUserHandler(pool)
 	calendarHandler := api.NewCalendarHandler(cfg.Frontend, pool, oauthConfig, cfg.CalendarLookbackDays, 9, 18)
 	moodHandler := api.NewMoodHandler(pool)
@@ -71,7 +72,7 @@ func run() error {
 
 	router := api.NewRouter(
 		authMw, corsMw, logMw, recMw,
-		userHandler, calendarHandler, moodHandler,
+		authHandler, userHandler, calendarHandler, moodHandler,
 		dashboardHandler, insightsHandler,
 		sleepHandler, circadianHandler,
 	)
