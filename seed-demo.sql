@@ -1,14 +1,13 @@
 -- ============================================================
--- Pulse Demo Seed — Auto-detects your user email
--- Run this in the Supabase SQL Editor (or psql) AFTER you
--- have signed in at least once (so auth.users record exists).
+-- Pulse Demo Seed — abumaaz2004@gmail.com
+-- Self-contained: creates the auth user if not already present.
+-- Run this in the Supabase SQL Editor.
 -- ============================================================
 
 DO $$
 DECLARE
   v_supabase_uid  UUID;
   v_user_id       UUID;
-  v_user_email    TEXT;
   v_today         DATE := CURRENT_DATE;
   v_day           DATE;
   i               INT;
@@ -30,24 +29,36 @@ DECLARE
   attendee_avg    FLOAT[]   := ARRAY[3.2,3.8,4.0,3.5,2.8,4.2,4.8,5.0,4.6,4.8,5.2,5.5,5.8,5.5,6.0,6.2,5.8,5.6,5.2,4.8,4.4,4.2,3.8,3.5,3.2,3.0,2.8,3.0,3.4,3.2];
 
 BEGIN
-  -- 1. Find the most recent user from auth (or specify email below)
-  -- OPTION A: Auto-detect most recent user
-  SELECT id, email INTO v_supabase_uid, v_user_email
+  -- 1. Find or create the auth user
+  SELECT id INTO v_supabase_uid
   FROM auth.users
-  ORDER BY created_at DESC
+  WHERE email = 'abumaaz2004@gmail.com'
   LIMIT 1;
-  
-  -- OPTION B: Uncomment to use specific email instead
-  -- SELECT id, email INTO v_supabase_uid, v_user_email
-  -- FROM auth.users
-  -- WHERE email = 'your-email@example.com'  -- CHANGE THIS
-  -- LIMIT 1;
 
   IF v_supabase_uid IS NULL THEN
-    RAISE EXCEPTION 'No users found in auth.users. Sign in to the app first, then re-run this script.';
+    v_supabase_uid := gen_random_uuid();
+    INSERT INTO auth.users (
+      id, email, aud, role,
+      email_confirmed_at,
+      created_at, updated_at,
+      raw_app_meta_data, raw_user_meta_data,
+      is_sso_user, encrypted_password
+    ) VALUES (
+      v_supabase_uid,
+      'abumaaz2004@gmail.com',
+      'authenticated',
+      'authenticated',
+      NOW(),
+      NOW(), NOW(),
+      '{"provider":"email","providers":["email"]}'::jsonb,
+      '{}'::jsonb,
+      false,
+      ''
+    );
+    RAISE NOTICE 'Created auth user: %', v_supabase_uid;
+  ELSE
+    RAISE NOTICE 'Found existing auth user: %', v_supabase_uid;
   END IF;
-
-  RAISE NOTICE 'Found auth user: % (email: %)', v_supabase_uid, v_user_email;
 
   -- 2. Upsert into public.users
   INSERT INTO public.users (supabase_uid, timezone, work_start_hour, work_end_hour, onboarding_done, consent_calendar, updated_at)
@@ -152,19 +163,19 @@ BEGIN
     v_user_id,
     'pattern_analysis',
     DATE_TRUNC('week', CURRENT_DATE),
-    '{
-      "summary": "Your behavioral data shows a clear burnout spiral pattern over the past 3 weeks. Meeting density above 65% consistently preceded mood drops by 2–3 days — this lag is the fingerprint Pulse uses to predict your state before you feel it.",
-      "recommendation": "Protect two 90-minute blocks daily as non-negotiable focus time. The data shows your mood recovers fastest when back-to-back meetings drop below 3 per day.",
-      "patterns": [
-        {"feature": "meeting_density_pct", "lag_days": 2, "direction": "negative", "confidence": 0.78, "severity": "high", "plain_english": "High meeting load predicts mood dip 2 days later"},
-        {"feature": "after_hours_mins", "lag_days": 1, "direction": "negative", "confidence": 0.71, "severity": "moderate", "plain_english": "Working late correlates with lower energy next day"},
-        {"feature": "avg_focus_block_mins", "lag_days": 0, "direction": "positive", "confidence": 0.65, "severity": "moderate", "plain_english": "Longer focus blocks associate with better mood same day"}
-      ],
-      "data_quality_note": "Based on 30 days of calendar + mood data. Correlations computed at 7-day rolling window.",
-      "disclaimer": "This is behavioral pattern analysis, not medical advice. For mental health support, please speak with a professional.",
-      "generated_at": "' || NOW()::TEXT || '",
-      "model_used": "llama-3.3-70b-versatile"
-    }'::jsonb,
+    jsonb_build_object(
+      'summary', 'Your behavioral data shows a clear burnout spiral pattern over the past 3 weeks. Meeting density above 65% consistently preceded mood drops by 2–3 days — this lag is the fingerprint Pulse uses to predict your state before you feel it.',
+      'recommendation', 'Protect two 90-minute blocks daily as non-negotiable focus time. The data shows your mood recovers fastest when back-to-back meetings drop below 3 per day.',
+      'patterns', jsonb_build_array(
+        jsonb_build_object('feature', 'meeting_density_pct', 'lag_days', 2, 'direction', 'negative', 'confidence', 0.78, 'severity', 'high', 'plain_english', 'High meeting load predicts mood dip 2 days later'),
+        jsonb_build_object('feature', 'after_hours_mins', 'lag_days', 1, 'direction', 'negative', 'confidence', 0.71, 'severity', 'moderate', 'plain_english', 'Working late correlates with lower energy next day'),
+        jsonb_build_object('feature', 'avg_focus_block_mins', 'lag_days', 0, 'direction', 'positive', 'confidence', 0.65, 'severity', 'moderate', 'plain_english', 'Longer focus blocks associate with better mood same day')
+      ),
+      'data_quality_note', 'Based on 30 days of calendar + mood data. Correlations computed at 7-day rolling window.',
+      'disclaimer', 'This is behavioral pattern analysis, not medical advice. For mental health support, please speak with a professional.',
+      'generated_at', NOW()::TEXT,
+      'model_used', 'llama-3.3-70b-versatile'
+    ),
     'llama-3.3-70b-versatile',
     NOW()
   )
@@ -173,5 +184,5 @@ BEGIN
     model_used = EXCLUDED.model_used,
     created_at = NOW();
 
-  RAISE NOTICE 'Seed complete for % (user_id: %)', v_user_email, v_user_id;
+  RAISE NOTICE 'Seed complete for abumaaz2004@gmail.com (user_id: %)', v_user_id;
 END $$;
