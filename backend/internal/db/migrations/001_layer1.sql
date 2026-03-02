@@ -160,14 +160,14 @@ create policy "sync_own" on public.sync_log
   ));
 
 -- Indexes
-create index idx_daily_features_user_date
+create index if not exists idx_daily_features_user_date
   on public.daily_features(user_id, date desc);
 
-create index idx_mood_logs_user_date
+create index if not exists idx_mood_logs_user_date
   on public.mood_logs(user_id, date desc);
 
-create index idx_raw_calendar_user_start
+create index if not exists idx_raw_calendar_user_start
   on public.raw_calendar_events(user_id, start_time desc);
 
-create index idx_llm_insights_user_week
+create index if not exists idx_llm_insights_user_week
   on public.llm_insights(user_id, week_start desc);

@@ -81,13 +81,13 @@ create policy "circadian_insights_own" on public.circadian_insights
   ));
 
 -- Indexes
-create index idx_sleep_sessions_user_date
+create index if not exists idx_sleep_sessions_user_date
   on public.sleep_sessions(user_id, session_date desc);
 
-create index idx_circadian_features_user_date
+create index if not exists idx_circadian_features_user_date
   on public.circadian_features(user_id, date desc);
 
-create index idx_circadian_insights_user_week
+create index if not exists idx_circadian_insights_user_week
   on public.circadian_insights(user_id, week_start desc);
 
 -- Extend oauth_tokens for Fitbit (provider='fitbit' row will be created on auth)
