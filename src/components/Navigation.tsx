@@ -49,9 +49,12 @@ const Navigation = () => {
               Why it matters
             </a>
           </div>
-          <button className="text-sm px-4 py-2 rounded-full border border-pulse-border text-pulse-text-secondary hover:text-pulse-text-primary hover:border-pulse-text-primary transition-all">
+          <a
+            href="/auth"
+            className="text-sm px-4 py-2 rounded-full border border-pulse-border text-pulse-text-secondary hover:text-pulse-text-primary hover:border-pulse-text-primary transition-all"
+          >
             Get early access
-          </button>
+          </a>
         </div>
       </div>
     </motion.nav>
