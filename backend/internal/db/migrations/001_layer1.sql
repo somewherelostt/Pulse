@@ -118,35 +118,42 @@ alter table public.mood_logs enable row level security;
 alter table public.llm_insights enable row level security;
 alter table public.sync_log enable row level security;
 
--- RLS policies
+-- RLS policies (drop if exists to allow re-running migration)
+drop policy if exists "users_own" on public.users;
 create policy "users_own" on public.users
   for all using (supabase_uid = auth.uid());
 
+drop policy if exists "oauth_own" on public.oauth_tokens;
 create policy "oauth_own" on public.oauth_tokens
   for all using (user_id in (
     select id from public.users where supabase_uid = auth.uid()
   ));
 
+drop policy if exists "calendar_own" on public.raw_calendar_events;
 create policy "calendar_own" on public.raw_calendar_events
   for all using (user_id in (
     select id from public.users where supabase_uid = auth.uid()
   ));
 
+drop policy if exists "features_own" on public.daily_features;
 create policy "features_own" on public.daily_features
   for all using (user_id in (
     select id from public.users where supabase_uid = auth.uid()
   ));
 
+drop policy if exists "mood_own" on public.mood_logs;
 create policy "mood_own" on public.mood_logs
   for all using (user_id in (
     select id from public.users where supabase_uid = auth.uid()
   ));
 
+drop policy if exists "insights_own" on public.llm_insights;
 create policy "insights_own" on public.llm_insights
   for all using (user_id in (
     select id from public.users where supabase_uid = auth.uid()
   ));
 
+drop policy if exists "sync_own" on public.sync_log;
 create policy "sync_own" on public.sync_log
   for all using (user_id in (
     select id from public.users where supabase_uid = auth.uid()

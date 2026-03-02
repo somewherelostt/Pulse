@@ -61,16 +61,20 @@ alter table public.sleep_sessions enable row level security;
 alter table public.circadian_features enable row level security;
 alter table public.circadian_insights enable row level security;
 
+-- RLS policies (drop if exists to allow re-running migration)
+drop policy if exists "sleep_own" on public.sleep_sessions;
 create policy "sleep_own" on public.sleep_sessions
   for all using (user_id in (
     select id from public.users where supabase_uid = auth.uid()
   ));
 
+drop policy if exists "circadian_features_own" on public.circadian_features;
 create policy "circadian_features_own" on public.circadian_features
   for all using (user_id in (
     select id from public.users where supabase_uid = auth.uid()
   ));
 
+drop policy if exists "circadian_insights_own" on public.circadian_insights;
 create policy "circadian_insights_own" on public.circadian_insights
   for all using (user_id in (
     select id from public.users where supabase_uid = auth.uid()
