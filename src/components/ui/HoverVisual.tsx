@@ -9,11 +9,15 @@ interface HoverVisualProps {
   className?: string;
 }
 
-export const HoverVisual = ({ text, children, className }: HoverVisualProps) => {
+export const HoverVisual = ({
+  text,
+  children,
+  className,
+}: HoverVisualProps) => {
   const [isHovered, setIsHovered] = useState(false);
-  
+
   // Check if gradient class is applied
-  const hasGradient = className?.includes('gradient');
+  const hasGradient = className?.includes("gradient");
 
   return (
     <span
@@ -25,7 +29,7 @@ export const HoverVisual = ({ text, children, className }: HoverVisualProps) => 
       <span
         className="relative inline-block cursor-default transition-all duration-300"
         style={{
-          color: hasGradient ? undefined : (isHovered ? "#6E7BF2" : "inherit"),
+          color: hasGradient ? undefined : isHovered ? "#6E7BF2" : "inherit",
           textShadow: isHovered ? "0 0 40px rgba(110,123,242,0.4)" : "none",
         }}
       >
@@ -37,7 +41,11 @@ export const HoverVisual = ({ text, children, className }: HoverVisualProps) => 
           initial={{ scaleX: 0, opacity: 0 }}
           animate={{ scaleX: isHovered ? 1 : 0, opacity: isHovered ? 1 : 0 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          style={{ transformOrigin: "left center", display: "block", width: "100%" }}
+          style={{
+            transformOrigin: "left center",
+            display: "block",
+            width: "100%",
+          }}
         />
       </span>
 

@@ -2,10 +2,17 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { RefreshCw, ArrowRight, Network, TrendingDown, TrendingUp } from "lucide-react";
+import {
+  RefreshCw,
+  ArrowRight,
+  Network,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { api } from "@/lib/api";
 import type { DashboardResponse } from "@/lib/types";
+import { getDemoDashboardData } from "@/lib/demoData";
 import { Sidebar } from "@/components/app/Sidebar";
 import { MetricCard } from "@/components/app/MetricCard";
 import { TimelineChart } from "@/components/app/TimelineChart";
@@ -22,12 +29,26 @@ function greeting() {
 
 function BurnoutRiskBadge({ score }: { score: number }) {
   const level =
-    score >= 0.7 ? { label: "High Risk", color: "text-pulse-danger bg-pulse-danger/10 border-pulse-danger/30" }
-    : score >= 0.45 ? { label: "Elevated", color: "text-pulse-accent-warm bg-pulse-accent-warm/10 border-pulse-accent-warm/30" }
-    : { label: "Normal Range", color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/30" };
+    score >= 0.7
+      ? {
+          label: "High Risk",
+          color: "text-pulse-danger bg-pulse-danger/10 border-pulse-danger/30",
+        }
+      : score >= 0.45
+        ? {
+            label: "Elevated",
+            color:
+              "text-pulse-accent-warm bg-pulse-accent-warm/10 border-pulse-accent-warm/30",
+          }
+        : {
+            label: "Normal Range",
+            color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/30",
+          };
 
   return (
-    <span className={`text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full border ${level.color}`}>
+    <span
+      className={`text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full border ${level.color}`}
+    >
       {level.label}
     </span>
   );
@@ -45,7 +66,14 @@ export default function DashboardPage() {
   const load = useCallback(async (t: string) => {
     try {
       const d = await api.getDashboard(t);
-      setData(d);
+
+      // If no meaningful data exists, use rich demo data for showcase
+      if ((d.metrics.data_days ?? 0) < 7) {
+        console.log("📊 Using demo data for showcase (insufficient real data)");
+        setData(getDemoDashboardData());
+      } else {
+        setData(d);
+      }
 
       const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
       if (d.user.timezone === "UTC" && browserTz !== "UTC") {
@@ -102,7 +130,11 @@ export default function DashboardPage() {
 
   // Derive a simple burnout risk score from meeting density + after hours
   const burnoutRisk = data
-    ? Math.min(1, ((data.metrics.avg_meeting_density_pct ?? 0) * 0.7 + (data.timeline?.[0]?.after_hours_mins ?? 0) / 500))
+    ? Math.min(
+        1,
+        (data.metrics.avg_meeting_density_pct ?? 0) * 0.7 +
+          (data.timeline?.[0]?.after_hours_mins ?? 0) / 500,
+      )
     : 0;
 
   return (
@@ -113,9 +145,19 @@ export default function DashboardPage() {
           {/* Header */}
           <div className="flex items-start justify-between mb-8">
             <div>
-              <h1 className="text-2xl font-light text-pulse-text-primary">
-                {greeting()}
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-light text-pulse-text-primary">
+                  {greeting()}
+                </h1>
+                {data &&
+                  (data.metrics.data_days ?? 0) >= 7 &&
+                  data.timeline &&
+                  data.timeline.length === 30 && (
+                    <span className="text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-pulse-accent/15 text-pulse-accent border border-pulse-accent/20">
+                      Demo Mode
+                    </span>
+                  )}
+              </div>
               <p className="text-pulse-text-muted text-sm mt-0.5">
                 {new Date().toLocaleDateString("en-US", {
                   weekday: "long",
@@ -140,7 +182,9 @@ export default function DashboardPage() {
                 disabled={syncing || !token}
                 className="border-pulse-border h-8 w-8 p-0"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} />
+                <RefreshCw
+                  className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`}
+                />
               </Button>
             </div>
           </div>
@@ -148,7 +192,10 @@ export default function DashboardPage() {
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-28 bg-pulse-surface border border-pulse-border rounded-xl animate-pulse" />
+                <div
+                  key={i}
+                  className="h-28 bg-pulse-surface border border-pulse-border rounded-xl animate-pulse"
+                />
               ))}
             </div>
           ) : data && data.metrics.data_days >= 7 ? (
@@ -159,23 +206,34 @@ export default function DashboardPage() {
                   label="Meeting Load"
                   value={`${Math.round((data.metrics.avg_meeting_density_pct ?? 0) * 100)}%`}
                   delta={
-                    data.metrics.meeting_density_trend === "up" ? "↑ from last week"
-                    : data.metrics.meeting_density_trend === "down" ? "↓ from last week"
-                    : "Stable"
+                    data.metrics.meeting_density_trend === "up"
+                      ? "↑ from last week"
+                      : data.metrics.meeting_density_trend === "down"
+                        ? "↓ from last week"
+                        : "Stable"
                   }
-                  deltaDirection={data.metrics.meeting_density_trend === "up" ? "up-bad" : "down-good"}
+                  deltaDirection={
+                    data.metrics.meeting_density_trend === "up"
+                      ? "up-bad"
+                      : "down-good"
+                  }
                   severity={
-                    (data.metrics.avg_meeting_density_pct ?? 0) > 0.7 ? "critical"
-                    : (data.metrics.avg_meeting_density_pct ?? 0) > 0.5 ? "warning"
-                    : "healthy"
+                    (data.metrics.avg_meeting_density_pct ?? 0) > 0.7
+                      ? "critical"
+                      : (data.metrics.avg_meeting_density_pct ?? 0) > 0.5
+                        ? "warning"
+                        : "healthy"
                   }
                   tooltip="% of your work window spent in meetings (7-day avg)"
                 />
                 <MetricCard
                   label="Avg Focus Block"
-                  value={`${Math.round(data.timeline?.find(d => d.avg_focus_block_mins != null)?.avg_focus_block_mins ?? 0)} min`}
+                  value={`${Math.round(data.timeline?.find((d) => d.avg_focus_block_mins != null)?.avg_focus_block_mins ?? 0)} min`}
                   severity={
-                    (data.timeline?.find(d => d.avg_focus_block_mins != null)?.avg_focus_block_mins ?? 0) < 45 ? "warning" : "healthy"
+                    (data.timeline?.find((d) => d.avg_focus_block_mins != null)
+                      ?.avg_focus_block_mins ?? 0) < 45
+                      ? "warning"
+                      : "healthy"
                   }
                   tooltip="Average uninterrupted focus window"
                 />
@@ -183,21 +241,35 @@ export default function DashboardPage() {
                   label="7-Day Mood Avg"
                   value={(data.metrics.avg_mood_score ?? 0).toFixed(1)}
                   delta={
-                    data.metrics.mood_trend === "up" ? "↑ improving"
-                    : data.metrics.mood_trend === "down" ? "↓ declining"
-                    : "Stable"
+                    data.metrics.mood_trend === "up"
+                      ? "↑ improving"
+                      : data.metrics.mood_trend === "down"
+                        ? "↓ declining"
+                        : "Stable"
                   }
-                  deltaDirection={data.metrics.mood_trend === "up" ? "up-good" : data.metrics.mood_trend === "down" ? "down-bad" : "down-good"}
+                  deltaDirection={
+                    data.metrics.mood_trend === "up"
+                      ? "up-good"
+                      : data.metrics.mood_trend === "down"
+                        ? "down-bad"
+                        : "down-good"
+                  }
                   severity={
-                    (data.metrics.avg_mood_score ?? 0) < 4 ? "critical"
-                    : (data.metrics.avg_mood_score ?? 0) < 6 ? "warning"
-                    : "healthy"
+                    (data.metrics.avg_mood_score ?? 0) < 4
+                      ? "critical"
+                      : (data.metrics.avg_mood_score ?? 0) < 6
+                        ? "warning"
+                        : "healthy"
                   }
                 />
                 <MetricCard
                   label="After-Hours / Day"
                   value={`${((data.timeline?.[0]?.after_hours_mins ?? 0) / 60).toFixed(1)}h`}
-                  severity={(data.timeline?.[0]?.after_hours_mins ?? 0) > 60 ? "warning" : "healthy"}
+                  severity={
+                    (data.timeline?.[0]?.after_hours_mins ?? 0) > 60
+                      ? "warning"
+                      : "healthy"
+                  }
                   tooltip="Average minutes worked outside your set hours"
                 />
               </div>
@@ -226,7 +298,10 @@ export default function DashboardPage() {
               </div>
 
               {/* Insight + Today */}
-              <div id="insights" className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div
+                id="insights"
+                className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
+              >
                 <InsightCard
                   insight={data.latest_insight}
                   onGenerate={handleGenerateInsight}
@@ -240,9 +315,14 @@ export default function DashboardPage() {
                     </h3>
                     {!moodLoggedToday ? (
                       <div className="flex items-center justify-between">
-                        <p className="text-sm text-pulse-text-secondary">Mood not logged yet</p>
+                        <p className="text-sm text-pulse-text-secondary">
+                          Mood not logged yet
+                        </p>
                         <Link href="/log">
-                          <Button size="sm" className="bg-pulse-accent text-pulse-bg h-7 text-xs">
+                          <Button
+                            size="sm"
+                            className="bg-pulse-accent text-pulse-bg h-7 text-xs"
+                          >
                             Log now →
                           </Button>
                         </Link>
@@ -264,10 +344,16 @@ export default function DashboardPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
-                            <p className="text-sm font-medium text-pulse-text-primary">Constellation</p>
-                            <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-pulse-primary/15 text-pulse-primary border border-pulse-primary/20">New</span>
+                            <p className="text-sm font-medium text-pulse-text-primary">
+                              Constellation
+                            </p>
+                            <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-pulse-primary/15 text-pulse-primary border border-pulse-primary/20">
+                              New
+                            </span>
                           </div>
-                          <p className="text-xs text-pulse-text-muted">Find peers who've been through your pattern</p>
+                          <p className="text-xs text-pulse-text-muted">
+                            Find peers who've been through your pattern
+                          </p>
                         </div>
                         <ArrowRight className="w-4 h-4 text-pulse-text-muted group-hover:text-pulse-primary group-hover:translate-x-1 transition-all" />
                       </div>
@@ -280,32 +366,50 @@ export default function DashboardPage() {
               {data.top_correlations && data.top_correlations.length > 0 && (
                 <div>
                   <div className="mb-3">
-                    <h2 className="text-base font-medium text-pulse-text-primary">What predicts your mood</h2>
-                    <p className="text-pulse-text-muted text-xs mt-0.5">Lagged correlations across 30 days</p>
+                    <h2 className="text-base font-medium text-pulse-text-primary">
+                      What predicts your mood
+                    </h2>
+                    <p className="text-pulse-text-muted text-xs mt-0.5">
+                      Lagged correlations across 30 days
+                    </p>
                   </div>
                   <div className="bg-pulse-surface border border-pulse-border rounded-xl overflow-hidden">
                     {data.top_correlations.map((c, i) => (
                       <div
                         key={i}
                         className={`flex items-center gap-4 px-4 py-3 text-sm ${
-                          i < data.top_correlations.length - 1 ? "border-b border-pulse-border/50" : ""
+                          i < data.top_correlations.length - 1
+                            ? "border-b border-pulse-border/50"
+                            : ""
                         }`}
                       >
-                        <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{
-                          backgroundColor: c.direction === "negative" ? "var(--color-danger)" : "var(--color-accent)"
-                        }} />
+                        <div
+                          className="w-1.5 h-1.5 rounded-full shrink-0"
+                          style={{
+                            backgroundColor:
+                              c.direction === "negative"
+                                ? "var(--color-danger)"
+                                : "var(--color-accent)",
+                          }}
+                        />
                         <span className="text-pulse-text-primary text-xs font-medium w-36 truncate">
                           {c.feature_name.replace(/_/g, " ")}
                         </span>
                         <span className="text-pulse-text-muted text-xs">
-                          → mood {c.lag_days === 0 ? "same day" : `${c.lag_days}d later`}
+                          → mood{" "}
+                          {c.lag_days === 0
+                            ? "same day"
+                            : `${c.lag_days}d later`}
                         </span>
                         <div className="flex-1 h-1.5 bg-pulse-bg rounded-full overflow-hidden max-w-[100px]">
                           <div
                             className="h-full rounded-full"
                             style={{
                               width: `${Math.min(100, Math.abs(c.correlation) * 100)}%`,
-                              backgroundColor: c.direction === "negative" ? "var(--color-danger)" : "var(--color-accent)",
+                              backgroundColor:
+                                c.direction === "negative"
+                                  ? "var(--color-danger)"
+                                  : "var(--color-accent)",
                             }}
                           />
                         </div>
@@ -349,7 +453,10 @@ export default function DashboardPage() {
                 </div>
               )}
               <div className="mt-8">
-                <EmptyState title="Pattern analysis unlocks after 7 mood logs" locked />
+                <EmptyState
+                  title="Pattern analysis unlocks after 7 mood logs"
+                  locked
+                />
               </div>
             </>
           )}
