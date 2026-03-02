@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pulse — Connect</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0A0A0F; --card: #111118; --border: #2A2A3A; --primary: #6E7BF2;
+      --teal: #4ECDC4; --text: #E8E8F0; --muted: #888899; --red: #EF4444;
+      --amber: #F7B731;
+    }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+    header { padding: 24px 32px; display: flex; align-items: center; }
+    .wordmark { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: var(--primary); }
+    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 16px; }
+    .container { width: 100%; max-width: 480px; }
+    h1 { font-size: 28px; font-weight: 300; margin-bottom: 8px; }
+    .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 40px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 28px; margin-bottom: 16px; }
+    .step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: white; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .step-num.done { background: var(--teal); }
+    .step-num.locked { background: var(--border); }
+    .step-title { font-size: 16px; font-weight: 600; }
+    .step-desc { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+    .btn { width: 100%; padding: 12px 20px; border-radius: 8px; border: none; font-size: 15px; font-weight: 500; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover:not(:disabled) { opacity: 0.9; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+    .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .pill-teal { background: rgba(78,205,196,0.15); color: var(--teal); border: 1px solid rgba(78,205,196,0.3); }
+    .pill-amber { background: rgba(247,183,49,0.15); color: var(--amber); border: 1px solid rgba(247,183,49,0.3); }
+    .small-text { font-size: 12px; color: var(--muted); margin-top: 10px; text-align: center; }
+    .hidden { display: none !important; }
+    .toggle-group { display: flex; gap: 8px; margin-bottom: 16px; }
+    .toggle-btn { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; transition: all 0.15s; }
+    .toggle-btn.active { border-color: var(--primary); background: rgba(110,123,242,0.1); color: var(--primary); }
+    .progress-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 12px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--primary); border-radius: 2px; transition: width 0.3s; }
+    .status-row { display: flex; align-items: center; justify-content: space-between; }
+    .card.locked { opacity: 0.5; pointer-events: none; }
+    input[type="text"] { width: 100%; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 14px; margin-bottom: 12px; }
+    input[type="text"]:focus { outline: none; border-color: var(--primary); }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="wordmark">Pulse</span>
+  </header>
+  <main>
+    <div class="container">
+      <h1>Get started</h1>
+      <p class="subtitle">Connect your calendar and start understanding your patterns.</p>
+
+      <!-- Step 1: Anonymous session -->
+      <div class="card" id="step1">
+        <div class="step-header">
+          <div class="step-num" id="num1">1</div>
+          <span class="step-title">Create private session</span>
+        </div>
+        <p class="step-desc">No email. No name. Just a private key stored in your browser.</p>
+        <div id="step1-action">
+          <button class="btn btn-primary" onclick="createAnonymousSession()">Start anonymously</button>
+        </div>
+        <div id="step1-done" class="hidden">
+          <div class="status-row">
+            <span class="pill pill-teal">✓ Session created</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Google Calendar -->
+      <div class="card locked" id="step2">
+        <div class="step-header">
+          <div class="step-num locked" id="num2">2</div>
+          <span class="step-title">Connect Google Calendar</span>
+        </div>
+        <p class="step-desc">Read-only access. Event titles are never stored — only hashed for privacy.</p>
+        <div id="step2-action">
+          <button class="btn btn-primary" onclick="connectGoogle()">
+            <svg style="width:16px;height:16px;vertical-align:middle;margin-right:8px" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Connect Google Calendar
+          </button>
+        </div>
+        <div id="step2-done" class="hidden">
+          <span class="pill pill-teal">✓ Connected</span>
+        </div>
+      </div>
+
+      <!-- Step 3: Sync -->
+      <div class="card locked" id="step3">
+        <div class="step-header">
+          <div class="step-num locked" id="num3">3</div>
+          <span class="step-title">Sync calendar</span>
+        </div>
+        <p class="step-desc">How far back should we look?</p>
+        <div class="toggle-group">
+          <button class="toggle-btn" onclick="setLookback(14, this)">14 days</button>
+          <button class="toggle-btn active" onclick="setLookback(30, this)">30 days</button>
+          <button class="toggle-btn" onclick="setLookback(60, this)">60 days</button>
+        </div>
+        <div id="step3-action">
+          <button class="btn btn-primary" onclick="startSync()">Sync now</button>
+        </div>
+        <div id="step3-progress" class="hidden">
+          <div style="color:var(--muted);font-size:13px;margin-bottom:8px" id="sync-status-text">Syncing...</div>
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:5%"></div></div>
+        </div>
+        <div id="step3-done" class="hidden">
+          <div class="status-row">
+            <span class="pill pill-teal">✓ Synced</span>
+            <a href="/dashboard" class="btn btn-primary" style="width:auto;padding:8px 16px;text-decoration:none;font-size:13px">Go to dashboard →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API = '/api/v1';
+    let token = localStorage.getItem('pulse_token');
+    let lookbackDays = 30;
+
+    // Check if returning from OAuth
+    const params = new URLSearchParams(location.search);
+    if (params.get('step') === '2' && params.get('syncing') === 'true') {
+      token = localStorage.getItem('pulse_token');
+      if (token) { markStep1Done(); markStep2Done(); }
+    }
+    if (token) { markStep1Done(); checkCalendarStatus(); }
+
+    function setLookback(days, btn) {
+      lookbackDays = days;
+      document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    async function createAnonymousSession() {
+      const btn = document.querySelector('#step1 .btn');
+      btn.disabled = true; btn.textContent = 'Creating...';
+      // Try to log in anonymously — use the Supabase anon endpoint via our backend
+      try {
+        const r = await fetch(`${API}/auth/anonymous`, { method: 'POST' });
+        const data = await r.json();
+        if (data.access_token) {
+          localStorage.setItem('pulse_token', data.access_token);
+          token = data.access_token;
+          markStep1Done();
+          checkCalendarStatus();
+        } else {
+          btn.disabled = false; btn.textContent = 'Start anonymously';
+          alert('Failed to create session. Please try again.');
+        }
+      } catch(e) {
+        btn.disabled = false; btn.textContent = 'Start anonymously';
+        alert('Network error. Is the server running?');
+      }
+    }
+
+    function markStep1Done() {
+      document.getElementById('step1-action').classList.add('hidden');
+      document.getElementById('step1-done').classList.remove('hidden');
+      document.getElementById('num1').classList.add('done');
+      document.getElementById('step2').classList.remove('locked');
+      document.getElementById('num2').classList.remove('locked');
+      document.getElementById('num2').textContent = '2';
+    }
+
+    async function checkCalendarStatus() {
+      if (!token) return;
+      try {
+        const r = await fetch(`${API}/calendar/status`, { headers: { Authorization: 'Bearer ' + token } });
+        const data = await r.json();
+        if (data.connected) { markStep2Done(); }
+      } catch(e) {}
+    }
+
+    async function connectGoogle() {
+      if (!token) return;
+      const btn = document.querySelector('#step2 .btn');
+      btn.disabled = true; btn.textContent = 'Redirecting...';
+      const r = await fetch(`${API}/calendar/connect`, { headers: { Authorization: 'Bearer ' + token } });
+      const data = await r.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        btn.disabled = false; btn.textContent = 'Connect Google Calendar';
+        alert('Could not get OAuth URL. Is GOOGLE_CLIENT_ID configured?');
+      }
+    }
+
+    function markStep2Done() {
+      document.getElementById('step2-action').classList.add('hidden');
+      document.getElementById('step2-done').classList.remove('hidden');
+      document.getElementById('num2').classList.remove('locked');
+      document.getElementById('num2').classList.add('done');
+      document.getElementById('step3').classList.remove('locked');
+      document.getElementById('num3').classList.remove('locked');
+      document.getElementById('num3').textContent = '3';
+    }
+
+    async function startSync() {
+      if (!token) return;
+      document.getElementById('step3-action').classList.add('hidden');
+      document.getElementById('step3-progress').classList.remove('hidden');
+      animateProgress();
+      try {
+        const r = await fetch(`${API}/calendar/sync`, { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+        const data = await r.json();
+        const count = data.events_fetched || 0;
+        document.getElementById('sync-status-text').textContent = `Synced ${count} events`;
+        document.getElementById('progress-fill').style.width = '100%';
+        setTimeout(() => {
+          document.getElementById('step3-progress').classList.add('hidden');
+          document.getElementById('step3-done').classList.remove('hidden');
+          document.getElementById('num3').classList.add('done');
+        }, 600);
+      } catch(e) {
+        document.getElementById('sync-status-text').textContent = 'Sync failed. Try again.';
+      }
+    }
+
+    function animateProgress() {
+      let w = 5;
+      const fill = document.getElementById('progress-fill');
+      const iv = setInterval(() => {
+        w = Math.min(w + Math.random() * 8, 85);
+        fill.style.width = w + '%';
+        if (w >= 85) clearInterval(iv);
+      }, 400);
+    }
+  </script>
+</body>
+</html>

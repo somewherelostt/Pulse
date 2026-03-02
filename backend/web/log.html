@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Pulse — Log Mood</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0A0A0F; --card: #111118; --border: #2A2A3A; --primary: #6E7BF2;
+      --teal: #4ECDC4; --text: #E8E8F0; --muted: #888899; --red: #EF4444;
+      --amber: #F7B731; --green: #22C55E;
+    }
+    html, body { height: 100%; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
+    header { padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .wordmark { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; color: var(--primary); text-decoration: none; }
+    .nav-link { font-size: 13px; color: var(--muted); text-decoration: none; }
+    .nav-link:hover { color: var(--text); }
+    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px 16px 48px; }
+    .container { width: 100%; max-width: 380px; }
+
+    /* Steps */
+    .step { display: none; }
+    .step.active { display: block; }
+
+    /* Headline */
+    .headline { font-size: 26px; font-weight: 300; letter-spacing: -0.5px; margin-bottom: 4px; }
+    .sub { font-size: 13px; color: var(--muted); margin-bottom: 40px; }
+
+    /* Big number input */
+    .num-input-wrap { display: flex; align-items: center; justify-content: center; gap: 24px; margin: 32px 0; }
+    .adj-btn { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .adj-btn:hover { border-color: var(--primary); background: rgba(110,123,242,0.1); color: var(--primary); }
+    .num-display { font-size: 80px; font-weight: 200; letter-spacing: -4px; width: 120px; text-align: center; line-height: 1; color: var(--text); transition: color 0.2s; }
+    .scale-label { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 4px; display: flex; justify-content: space-between; padding: 0 4px; }
+
+    /* Color feedback */
+    .num-display.low { color: var(--red); }
+    .num-display.mid { color: var(--amber); }
+    .num-display.high { color: var(--teal); }
+
+    /* Dots progress */
+    .dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 28px; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); transition: background 0.2s, transform 0.2s; }
+    .dot.active { background: var(--primary); transform: scale(1.3); }
+    .dot.done { background: var(--teal); }
+
+    /* Tags */
+    .tags-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 32px; }
+    .tag { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; transition: all 0.15s; }
+    .tag.selected { border-color: var(--primary); background: rgba(110,123,242,0.12); color: var(--primary); }
+
+    /* Note textarea */
+    .note-wrap { margin: 20px 0 32px; }
+    textarea { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 15px; font-family: inherit; padding: 14px 16px; resize: none; height: 100px; transition: border-color 0.15s; }
+    textarea:focus { outline: none; border-color: var(--primary); }
+    textarea::placeholder { color: var(--muted); }
+    .char-count { font-size: 11px; color: var(--muted); text-align: right; margin-top: 6px; }
+
+    /* Skip link */
+    .skip-link { display: block; text-align: center; margin-top: 12px; font-size: 12px; color: var(--muted); cursor: pointer; text-decoration: underline; }
+    .skip-link:hover { color: var(--text); }
+
+    /* Buttons */
+    .btn { width: 100%; padding: 14px 20px; border-radius: 10px; border: none; font-size: 16px; font-weight: 500; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+
+    /* Existing entry banner */
+    .existing-banner { background: rgba(78,205,196,0.1); border: 1px solid rgba(78,205,196,0.3); border-radius: 10px; padding: 14px 16px; margin-bottom: 28px; font-size: 13px; color: var(--teal); display: none; }
+
+    /* Success */
+    #step-success { text-align: center; padding: 20px 0; }
+    .check-circle { width: 72px; height: 72px; border-radius: 50%; background: rgba(34,197,94,0.15); border: 2px solid var(--green); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 28px; }
+    .success-title { font-size: 22px; font-weight: 300; margin-bottom: 8px; }
+    .success-sub { font-size: 13px; color: var(--muted); margin-bottom: 32px; }
+    .success-links { display: flex; flex-direction: column; gap: 10px; }
+    .success-links a { display: block; padding: 12px; border-radius: 8px; border: 1px solid var(--border); text-align: center; text-decoration: none; color: var(--text); font-size: 14px; transition: border-color 0.15s; }
+    .success-links a:hover { border-color: var(--primary); color: var(--primary); }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/" class="wordmark">Pulse</a>
+    <a href="/dashboard" class="nav-link">Dashboard →</a>
+  </header>
+  <main>
+    <div class="container">
+      <!-- Dots indicator -->
+      <div class="dots">
+        <div class="dot active" id="dot0"></div>
+        <div class="dot" id="dot1"></div>
+        <div class="dot" id="dot2"></div>
+        <div class="dot" id="dot3"></div>
+      </div>
+
+      <!-- Existing entry banner -->
+      <div class="existing-banner" id="existing-banner"></div>
+
+      <!-- Step 0: Mood -->
+      <div class="step active" id="step-mood">
+        <p class="headline">How are you today?</p>
+        <p class="sub">Overall mood right now.</p>
+        <div class="num-input-wrap">
+          <button class="adj-btn" onclick="adj('mood', -1)">−</button>
+          <div class="num-display high" id="mood-display">7</div>
+          <button class="adj-btn" onclick="adj('mood', +1)">+</button>
+        </div>
+        <div class="scale-label"><span>1 — terrible</span><span>10 — great</span></div>
+        <br>
+        <button class="btn btn-primary" onclick="next(0)">Next</button>
+      </div>
+
+      <!-- Step 1: Energy -->
+      <div class="step" id="step-energy">
+        <p class="headline">Energy level?</p>
+        <p class="sub">How physically energized you feel.</p>
+        <div class="num-input-wrap">
+          <button class="adj-btn" onclick="adj('energy', -1)">−</button>
+          <div class="num-display high" id="energy-display">7</div>
+          <button class="adj-btn" onclick="adj('energy', +1)">+</button>
+        </div>
+        <div class="scale-label"><span>1 — drained</span><span>10 — charged</span></div>
+        <br>
+        <button class="btn btn-primary" onclick="next(1)">Next</button>
+        <span class="skip-link" onclick="skipEnergy()">Skip</span>
+      </div>
+
+      <!-- Step 2: Anxiety -->
+      <div class="step" id="step-anxiety">
+        <p class="headline">Stress or anxiety?</p>
+        <p class="sub">Higher = more stressed.</p>
+        <div class="num-input-wrap">
+          <button class="adj-btn" onclick="adj('anxiety', -1)">−</button>
+          <div class="num-display mid" id="anxiety-display">5</div>
+          <button class="adj-btn" onclick="adj('anxiety', +1)">+</button>
+        </div>
+        <div class="scale-label"><span>1 — calm</span><span>10 — overwhelmed</span></div>
+        <br>
+        <button class="btn btn-primary" onclick="next(2)">Next</button>
+        <span class="skip-link" onclick="skipAnxiety()">Skip</span>
+      </div>
+
+      <!-- Step 3: Tags + Note -->
+      <div class="step" id="step-note">
+        <p class="headline">Anything else?</p>
+        <p class="sub">Optional context.</p>
+        <div class="tags-wrap" id="tags-wrap">
+          <button class="tag" onclick="toggleTag(this, 'overwhelmed')">overwhelmed</button>
+          <button class="tag" onclick="toggleTag(this, 'focused')">focused</button>
+          <button class="tag" onclick="toggleTag(this, 'disconnected')">disconnected</button>
+          <button class="tag" onclick="toggleTag(this, 'rested')">rested</button>
+          <button class="tag" onclick="toggleTag(this, 'anxious')">anxious</button>
+          <button class="tag" onclick="toggleTag(this, 'flow-state')">flow state</button>
+          <button class="tag" onclick="toggleTag(this, 'burned-out')">burned out</button>
+          <button class="tag" onclick="toggleTag(this, 'motivated')">motivated</button>
+        </div>
+        <div class="note-wrap">
+          <textarea id="note-input" placeholder="What's on your mind? (optional)" maxlength="280" oninput="updateCharCount()"></textarea>
+          <div class="char-count"><span id="char-count">0</span>/280</div>
+        </div>
+        <button class="btn btn-primary" onclick="submit()" id="submit-btn">Save check-in</button>
+        <span class="skip-link" onclick="submit()">Skip and save</span>
+      </div>
+
+      <!-- Success -->
+      <div class="step" id="step-success">
+        <div class="check-circle">✓</div>
+        <p class="success-title">Logged.</p>
+        <p class="success-sub" id="success-sub">Your check-in was saved.</p>
+        <div class="success-links">
+          <a href="/dashboard">View dashboard</a>
+          <a href="/log">Log again tomorrow</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API = '/api/v1';
+    const token = localStorage.getItem('pulse_token');
+    if (!token) { window.location.href = '/connect'; }
+
+    const vals = { mood: 7, energy: null, anxiety: null };
+    const selectedTags = new Set();
+    let existingEntry = null;
+    const STEPS = ['mood', 'energy', 'anxiety', 'note', 'success'];
+    let currentStep = 0;
+
+    // Check for today's entry
+    (async () => {
+      try {
+        const r = await fetch(`${API}/mood/today`, { headers: { Authorization: 'Bearer ' + token } });
+        const data = await r.json();
+        if (data && data.score) {
+          existingEntry = data;
+          vals.mood = data.score;
+          vals.energy = data.energy;
+          vals.anxiety = data.anxiety;
+          updateDisplay('mood', vals.mood);
+          if (vals.energy != null) updateDisplay('energy', vals.energy);
+          if (vals.anxiety != null) updateDisplay('anxiety', vals.anxiety);
+          if (data.tags) data.tags.forEach(t => {
+            selectedTags.add(t);
+            const el = [...document.querySelectorAll('.tag')].find(b => b.textContent.trim().replace(' ', '-') === t || b.getAttribute('onclick').includes(`'${t}'`));
+            if (el) el.classList.add('selected');
+          });
+          if (data.note) document.getElementById('note-input').value = data.note;
+          const banner = document.getElementById('existing-banner');
+          banner.style.display = 'block';
+          banner.textContent = `You already logged today (mood: ${data.score}/10). Submitting will update your entry.`;
+        }
+      } catch(e) {}
+    })();
+
+    function updateDisplay(field, val) {
+      const el = document.getElementById(field + '-display');
+      if (!el) return;
+      el.textContent = val;
+      el.className = 'num-display';
+      if (val <= 3) el.classList.add('low');
+      else if (val <= 6) el.classList.add('mid');
+      else el.classList.add('high');
+    }
+
+    function adj(field, delta) {
+      const cur = vals[field] ?? 5;
+      vals[field] = Math.max(1, Math.min(10, cur + delta));
+      updateDisplay(field, vals[field]);
+    }
+
+    function setDots(step) {
+      for (let i = 0; i < 4; i++) {
+        const d = document.getElementById('dot' + i);
+        d.className = 'dot';
+        if (i < step) d.classList.add('done');
+        else if (i === step) d.classList.add('active');
+      }
+    }
+
+    function showStep(name) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step-' + name).classList.add('active');
+      currentStep = STEPS.indexOf(name);
+      if (name !== 'success') setDots(currentStep);
+    }
+
+    function next(fromIdx) {
+      const order = ['mood', 'energy', 'anxiety', 'note'];
+      showStep(order[fromIdx + 1]);
+    }
+
+    function skipEnergy() { vals.energy = null; showStep('anxiety'); }
+    function skipAnxiety() { vals.anxiety = null; showStep('note'); }
+
+    function toggleTag(btn, tag) {
+      if (selectedTags.has(tag)) { selectedTags.delete(tag); btn.classList.remove('selected'); }
+      else { selectedTags.add(tag); btn.classList.add('selected'); }
+    }
+
+    function updateCharCount() {
+      const v = document.getElementById('note-input').value;
+      document.getElementById('char-count').textContent = v.length;
+    }
+
+    async function submit() {
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true; btn.textContent = 'Saving...';
+      const note = document.getElementById('note-input').value.trim() || null;
+      const body = {
+        score: vals.mood,
+        energy: vals.energy,
+        anxiety: vals.anxiety,
+        note,
+        tags: [...selectedTags],
+      };
+      try {
+        const r = await fetch(`${API}/mood`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify(body),
+        });
+        if (!r.ok) throw new Error('save failed');
+        const data = await r.json();
+        const parts = [`Mood: ${data.score}/10`];
+        if (data.energy) parts.push(`Energy: ${data.energy}/10`);
+        if (data.anxiety) parts.push(`Stress: ${data.anxiety}/10`);
+        document.getElementById('success-sub').textContent = parts.join(' · ');
+        showStep('success');
+      } catch(e) {
+        btn.disabled = false; btn.textContent = 'Save check-in';
+        alert('Failed to save. Check your connection.');
+      }
+    }
+  </script>
+</body>
+</html>
