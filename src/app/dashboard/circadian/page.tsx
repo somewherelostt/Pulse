@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { api } from "@/lib/api";
 import { Sidebar } from "@/components/app/Sidebar";
 import { Button } from "@/components/ui/button";
+import { getDemoCircadianDashboard } from "@/lib/demoData";
 
 export default function CircadianPage() {
   const [token, setToken] = useState<string | null>(null);
@@ -37,9 +38,16 @@ export default function CircadianPage() {
     setLoading(true);
     try {
       const data = await api.circadianDashboard(token);
-      setDashboard(data);
+      // Use demo data if no insights exist
+      if (!data || !data.summary || data.summary.sleep_sessions_count === 0) {
+        setDashboard(getDemoCircadianDashboard());
+      } else {
+        setDashboard(data);
+      }
     } catch (error) {
       console.error("Failed to load circadian dashboard:", error);
+      // Fallback to demo data on error for showcase
+      setDashboard(getDemoCircadianDashboard());
     } finally {
       setLoading(false);
     }

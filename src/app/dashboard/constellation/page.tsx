@@ -117,7 +117,6 @@ function FingerprintRadar({ data }: { data: Record<string, number> }) {
   });
 
   const polyline = dataPoints.map((p) => `${p.x},${p.y}`).join(" ");
-  const outerPolygon = points.map((p) => `${p.x},${p.y}`).join(" ");
 
   return (
     <svg viewBox="0 0 200 200" className="w-full max-w-[260px]">
@@ -189,6 +188,7 @@ export default function ConstellationPage() {
     sessionId: string;
     context: string;
     similarity: number;
+    isCreator: boolean;
   } | null>(null);
   const [showRating, setShowRating] = useState<string | null>(null);
 
@@ -201,6 +201,20 @@ export default function ConstellationPage() {
         return;
       }
       setToken(session.access_token ?? null);
+
+      // Check for ?room= invite link — User B joins directly
+      const roomParam = new URLSearchParams(window.location.search).get(
+        "room",
+      );
+      if (roomParam) {
+        setActiveSession({
+          roomId: roomParam,
+          sessionId: `url-${roomParam}`,
+          context: "You were invited to an anonymous peer support session.",
+          similarity: 0.85,
+          isCreator: false,
+        });
+      }
     });
   }, [supabase.auth]);
 
@@ -240,52 +254,49 @@ export default function ConstellationPage() {
     if (!token) return;
     setMatching(true);
     try {
-      // First get a match
+      // Try real backend match first
       const matchResult = await api.constellationMatch(token);
 
-      if (!matchResult.match_found) {
-        // DEMO MODE: Use shared demo room for testing with 2 browsers
-        console.log("No backend match - using shared demo room");
-        const demoRoomId = "demo-room-shared";
-        const demoSessionId = `demo-session-${Date.now()}`;
-
+      if (matchResult.match_found && matchResult.match_id) {
+        const sessionResult = await api.constellationSessionStart(
+          token,
+          matchResult.match_id,
+        );
         setActiveSession({
-          roomId: demoRoomId,
-          sessionId: demoSessionId,
+          roomId: sessionResult.room_id,
+          sessionId: matchResult.match_id,
           context:
+            sessionResult.context ||
+            matchResult.context_hint ||
             DEMO_MATCHES.find((m) => m.id === matchId)?.context ||
-            "Demo peer support session",
+            "",
           similarity:
-            DEMO_MATCHES.find((m) => m.id === matchId)?.similarity || 0.85,
+            sessionResult.similarity || matchResult.similarity || 0.91,
+          isCreator: true,
         });
-        setMatching(false);
         return;
       }
 
-      // Start the session
-      const sessionResult = await api.constellationSessionStart(
-        token,
-        matchResult.match_id!,
-      );
-
+      // No backend match — create a shareable room client-side
+      const roomId = crypto.randomUUID();
+      const match = DEMO_MATCHES.find((m) => m.id === matchId);
       setActiveSession({
-        roomId: sessionResult.room_id,
-        sessionId: matchResult.match_id!,
-        context: sessionResult.context,
-        similarity: sessionResult.similarity,
+        roomId,
+        sessionId: `local-${roomId}`,
+        context: match?.context ?? "Anonymous peer support session",
+        similarity: match?.similarity ?? 0.85,
+        isCreator: true,
       });
-    } catch (error) {
-      console.error("Failed to start session:", error);
-      // Fallback to demo mode on any error
-      console.log("Error occurred - using shared demo room");
-      const demoRoomId = "demo-room-shared";
-      const demoSessionId = `demo-session-${Date.now()}`;
-
+    } catch {
+      // Backend unavailable — still create a shareable room
+      const roomId = crypto.randomUUID();
+      const match = DEMO_MATCHES.find((m) => m.id === matchId);
       setActiveSession({
-        roomId: demoRoomId,
-        sessionId: demoSessionId,
-        context: "Demo peer support session - testing WebRTC connection",
-        similarity: 0.85,
+        roomId,
+        sessionId: `local-${roomId}`,
+        context: match?.context ?? "Anonymous peer support session",
+        similarity: match?.similarity ?? 0.85,
+        isCreator: true,
       });
     } finally {
       setMatching(false);
@@ -294,7 +305,12 @@ export default function ConstellationPage() {
 
   const handleEndSession = (sessionId: string) => {
     setActiveSession(null);
-    setShowRating(sessionId);
+    // Only show rating for real backend sessions
+    if (!sessionId.startsWith("local-") && !sessionId.startsWith("url-")) {
+      setShowRating(sessionId);
+    } else {
+      setSelectedMatch(null);
+    }
   };
 
   const handleRateSession = async (rating: number, wouldTalkAgain: boolean) => {
@@ -306,10 +322,11 @@ export default function ConstellationPage() {
         rating,
         wouldTalkAgain,
       );
-      setShowRating(null);
-      setSelectedMatch(null);
     } catch (error) {
       console.error("Failed to rate session:", error);
+    } finally {
+      setShowRating(null);
+      setSelectedMatch(null);
     }
   };
 
@@ -321,6 +338,7 @@ export default function ConstellationPage() {
         matchContext={activeSession.context}
         similarity={activeSession.similarity}
         token={token!}
+        isCreator={activeSession.isCreator}
         onEnd={handleEndSession}
       />
     );
@@ -637,19 +655,19 @@ export default function ConstellationPage() {
                       {[
                         {
                           step: "01",
-                          text: "Request is sent anonymously. Peer accepts or declines.",
+                          text: "Click a match → request session → get a shareable invite link.",
                         },
                         {
                           step: "02",
-                          text: "End-to-end encrypted video room opens. 45-min limit.",
+                          text: "Send the link to your peer. They open it in any browser.",
                         },
                         {
                           step: "03",
-                          text: "No names, no recording. Only the conversation exists.",
+                          text: "Text chat opens instantly. Video connects when both are ready.",
                         },
                         {
                           step: "04",
-                          text: "Rate the session (1–5) to improve matching for others.",
+                          text: "45-min limit. No names, no recording. Rate after.",
                         },
                       ].map(({ step, text }) => (
                         <div key={step} className="flex gap-3 items-start">

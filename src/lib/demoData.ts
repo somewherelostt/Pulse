@@ -189,3 +189,119 @@ export function getDemoDashboardData(): DashboardResponse {
     },
   };
 }
+
+/**
+ * Demo sleep data for showcase (30 days)
+ */
+export function getDemoSleepData() {
+  const now = new Date();
+  const sleepData = [];
+
+  // Pattern: good sleep initially, deteriorates mid-month, recovers
+  const sleepDurations = [
+    450, 440, 455, 435, 470, 420, 410, 400, 415, 425, 405, 390, 380, 370, 360,
+    355, 365, 375, 390, 400, 410, 425, 435, 450, 460, 465, 455, 445, 450, 460,
+  ]; // minutes
+  const sleepScores = [
+    85, 82, 87, 80, 90, 78, 75, 72, 76, 78, 74, 68, 65, 62, 58, 56, 60, 65, 70,
+    72, 75, 78, 82, 85, 88, 90, 87, 84, 86, 89,
+  ];
+  const bedtimes = [
+    23, 23.5, 23, 0, 23, 0.5, 1, 1.5, 0.5, 0, 1, 1.5, 2, 2.5, 2, 1.5, 1, 0.5, 0,
+    23.5, 23, 23, 22.5, 22.5, 23, 23, 23.5, 23, 22.5, 23,
+  ]; // hours (decimal)
+
+  for (let i = 0; i < 30; i++) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - (29 - i));
+
+    const bedtime = bedtimes[i];
+    const bedtimeHour = Math.floor(bedtime);
+    const bedtimeMin = Math.round((bedtime % 1) * 60);
+
+    const sleepMins = sleepDurations[i];
+    const wakeTime = (bedtime + sleepMins / 60) % 24;
+    const wakeHour = Math.floor(wakeTime);
+    const wakeMin = Math.round((wakeTime % 1) * 60);
+
+    sleepData.push({
+      session_id: `demo-sleep-${i}`,
+      date: date.toISOString().split("T")[0],
+      bedtime_hour: bedtimeHour,
+      bedtime_min: bedtimeMin,
+      wake_hour: wakeHour,
+      wake_min: wakeMin,
+      total_mins: sleepMins,
+      sleep_score: sleepScores[i],
+      source: "manual",
+      created_at: date.toISOString(),
+    });
+  }
+
+  return sleepData;
+}
+
+/**
+ * Demo circadian dashboard data for showcase
+ */
+export function getDemoCircadianDashboard() {
+  return {
+    summary: {
+      avg_sleep_duration_mins: 415,
+      avg_rhythm_consistency_pct: 72,
+      avg_sleep_debt_mins: 35,
+      avg_recovery_score: 78,
+      sleep_sessions_count: 30,
+      features_extracted_count: 28,
+    },
+    latest_insight: {
+      narrative:
+        "Your circadian analysis reveals a bi-phasic pattern with notable mid-month disruption. Sleep onset showed progressive delay from 11 PM to 2 AM during days 10-16, correlating with the meeting density spike observed in your behavioral data. Recovery phase (days 20-30) demonstrates homeostatic regulation — your body naturally stabilized bedtime back to 11 PM when workload normalized. The consistency score of 72% indicates moderate rhythm entrainment; ideal range is 80-90%. Sleep debt accumulated to 8.5 hours during peak stress, cleared within 6 days post-recovery.",
+      interventions: [
+        "Implement strict 10:30 PM screen cutoff on high-meeting days (>6 meetings). Data shows 90-minute delay in sleep onset when meetings exceed this threshold.",
+        "Schedule 'circadian anchor' — wake at same time (±15 min) even on weekends. This single intervention can boost consistency score by 15-20%.",
+        "Block 7-8 PM as meeting-free zone. Evening meetings correlate with +45 min bedtime delay and -12 point sleep score reduction.",
+      ],
+      model_used: "llama-3.3-70b-versatile",
+    },
+    timeline: generateDemoCircadianTimeline(),
+  };
+}
+
+function generateDemoCircadianTimeline() {
+  const now = new Date();
+  const timeline = [];
+
+  const sleepDurations = [
+    450, 440, 455, 435, 470, 420, 410, 400, 415, 425, 405, 390, 380, 370, 360,
+    355, 365, 375, 390, 400, 410, 425, 435, 450, 460, 465, 455, 445, 450, 460,
+  ];
+  const consistencyScores = [
+    85, 82, 80, 78, 75, 72, 70, 68, 65, 63, 60, 58, 55, 53, 50, 52, 55, 60, 65,
+    68, 72, 75, 78, 80, 82, 85, 87, 85, 83, 85,
+  ];
+  const sleepDebt = [
+    10, 15, 5, 20, -10, 25, 35, 40, 30, 25, 40, 50, 60, 70, 80, 85, 75, 65, 50,
+    45, 35, 25, 15, 5, -5, -10, 0, 10, 5, 0,
+  ];
+  const recoveryScores = [
+    85, 82, 87, 80, 90, 78, 75, 72, 76, 78, 74, 68, 65, 62, 58, 56, 60, 65, 70,
+    72, 75, 78, 82, 85, 88, 90, 87, 84, 86, 89,
+  ];
+
+  for (let i = 0; i < 30; i++) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - (29 - i));
+
+    timeline.push({
+      date: date.toISOString().split("T")[0],
+      sleep_duration_mins: sleepDurations[i],
+      sleep_score: recoveryScores[i],
+      rhythm_consistency_pct: consistencyScores[i],
+      sleep_debt_mins: sleepDebt[i],
+      recovery_score: recoveryScores[i],
+    });
+  }
+
+  return timeline;
+}

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { api } from "@/lib/api";
 import { Sidebar } from "@/components/app/Sidebar";
 import { Button } from "@/components/ui/button";
+import { getDemoSleepData } from "@/lib/demoData";
 
 export default function SleepPage() {
   const [token, setToken] = useState<string | null>(null);
@@ -44,9 +45,16 @@ export default function SleepPage() {
     setLoading(true);
     try {
       const data = await api.sleepGetRange(token);
-      setSleepData(data);
+      // Use demo data if no real data exists
+      if (!data || data.length === 0) {
+        setSleepData(getDemoSleepData());
+      } else {
+        setSleepData(data);
+      }
     } catch (error) {
       console.error("Failed to load sleep data:", error);
+      // Fallback to demo data on error for showcase
+      setSleepData(getDemoSleepData());
     } finally {
       setLoading(false);
     }
