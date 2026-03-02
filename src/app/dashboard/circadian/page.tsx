@@ -225,8 +225,8 @@ export default function CircadianPage() {
                     </p>
                   </div>
                   <p className="text-2xl font-light text-pulse-text-primary">
-                    {summary.avg_sleep_score
-                      ? Math.round(summary.avg_sleep_score)
+                    {summary.avg_sleep_score ?? summary.avg_recovery_score
+                      ? Math.round(summary.avg_sleep_score ?? summary.avg_recovery_score)
                       : "—"}
                   </p>
                   <p className="text-xs text-pulse-text-muted mt-1">
@@ -244,11 +244,10 @@ export default function CircadianPage() {
                         AI-Generated Analysis
                       </h2>
                       <p className="text-xs text-pulse-text-muted mt-0.5">
-                        From{" "}
-                        {new Date(
-                          dashboard.latest_insight.week_start,
-                        ).toLocaleDateString()}{" "}
-                        · {dashboard.latest_insight.model_used}
+                        {dashboard.latest_insight.week_start
+                          ? `From ${new Date(dashboard.latest_insight.week_start).toLocaleDateString()} · `
+                          : ""}
+                        {dashboard.latest_insight.model_used}
                       </p>
                     </div>
                   </div>

@@ -224,6 +224,11 @@ export function getDemoSleepData() {
     const wakeHour = Math.floor(wakeTime);
     const wakeMin = Math.round((wakeTime % 1) * 60);
 
+    const fmtTime = (h: number, m: number) => {
+      const hour = h % 12 || 12;
+      const ampm = h < 12 ? "AM" : "PM";
+      return `${hour}:${m.toString().padStart(2, "0")} ${ampm}`;
+    };
     sleepData.push({
       session_id: `demo-sleep-${i}`,
       date: date.toISOString().split("T")[0],
@@ -231,6 +236,8 @@ export function getDemoSleepData() {
       bedtime_min: bedtimeMin,
       wake_hour: wakeHour,
       wake_min: wakeMin,
+      bedtime: fmtTime(bedtimeHour, bedtimeMin),
+      wake_time: fmtTime(wakeHour, wakeMin),
       total_mins: sleepMins,
       sleep_score: sleepScores[i],
       source: "manual",
@@ -251,6 +258,7 @@ export function getDemoCircadianDashboard() {
       avg_rhythm_consistency_pct: 72,
       avg_sleep_debt_mins: 35,
       avg_recovery_score: 78,
+      avg_sleep_score: 77,
       sleep_sessions_count: 30,
       features_extracted_count: 28,
     },
@@ -258,9 +266,24 @@ export function getDemoCircadianDashboard() {
       narrative:
         "Your circadian analysis reveals a bi-phasic pattern with notable mid-month disruption. Sleep onset showed progressive delay from 11 PM to 2 AM during days 10-16, correlating with the meeting density spike observed in your behavioral data. Recovery phase (days 20-30) demonstrates homeostatic regulation — your body naturally stabilized bedtime back to 11 PM when workload normalized. The consistency score of 72% indicates moderate rhythm entrainment; ideal range is 80-90%. Sleep debt accumulated to 8.5 hours during peak stress, cleared within 6 days post-recovery.",
       interventions: [
-        "Implement strict 10:30 PM screen cutoff on high-meeting days (>6 meetings). Data shows 90-minute delay in sleep onset when meetings exceed this threshold.",
-        "Schedule 'circadian anchor' — wake at same time (±15 min) even on weekends. This single intervention can boost consistency score by 15-20%.",
-        "Block 7-8 PM as meeting-free zone. Evening meetings correlate with +45 min bedtime delay and -12 point sleep score reduction.",
+        {
+          title: "Screen cutoff on high-meeting days",
+          description:
+            "Implement strict 10:30 PM screen cutoff on high-meeting days (>6 meetings). Data shows 90-minute delay in sleep onset when meetings exceed this threshold.",
+          priority: "high",
+        },
+        {
+          title: "Circadian anchor wake time",
+          description:
+            "Schedule 'circadian anchor' — wake at same time (±15 min) even on weekends. This single intervention can boost consistency score by 15-20%.",
+          priority: "medium",
+        },
+        {
+          title: "Evening meeting-free zone",
+          description:
+            "Block 7-8 PM as meeting-free zone. Evening meetings correlate with +45 min bedtime delay and -12 point sleep score reduction.",
+          priority: "medium",
+        },
       ],
       model_used: "llama-3.3-70b-versatile",
     },

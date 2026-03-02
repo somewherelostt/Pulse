@@ -116,6 +116,10 @@ export function PeerSession({
   // Main session init: WebRTC + Supabase Realtime signaling
   useEffect(() => {
     const supabase = createClient();
+    // Explicitly set JWT so Realtime WebSocket is authenticated
+    if (token) {
+      supabase.realtime.setAuth(token);
+    }
 
     // --- WebRTC peer connection ---
     const pc = new RTCPeerConnection({
