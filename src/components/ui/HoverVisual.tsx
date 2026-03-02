@@ -11,6 +11,9 @@ interface HoverVisualProps {
 
 export const HoverVisual = ({ text, children, className }: HoverVisualProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  
+  // Check if gradient class is applied
+  const hasGradient = className?.includes('gradient');
 
   return (
     <span
@@ -20,9 +23,9 @@ export const HoverVisual = ({ text, children, className }: HoverVisualProps) => 
     >
       {/* Text — smooth glow on hover, no font change */}
       <span
-        className="relative inline-block cursor-default transition-colors duration-300"
+        className="relative inline-block cursor-default transition-all duration-300"
         style={{
-          color: isHovered ? "#6E7BF2" : "inherit",
+          color: hasGradient ? undefined : (isHovered ? "#6E7BF2" : "inherit"),
           textShadow: isHovered ? "0 0 40px rgba(110,123,242,0.4)" : "none",
         }}
       >
