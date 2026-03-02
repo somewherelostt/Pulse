@@ -13,6 +13,7 @@ import (
 	"pulse-api/internal/api"
 	"pulse-api/internal/collectors/google"
 	"pulse-api/internal/config"
+	"pulse-api/internal/constellation"
 	"pulse-api/internal/db"
 	"pulse-api/internal/llm"
 	"pulse-api/internal/middleware"
@@ -70,11 +71,16 @@ func run() error {
 	sleepHandler := api.NewSleepHandler(pool)
 	circadianHandler := api.NewCircadianHandler(pool, llmClient)
 
+	// Layer 5: Constellation
+	roomHub := constellation.NewRoomHub(pool)
+	constellationHandler := api.NewConstellationHandler(pool, llmClient, roomHub)
+
 	router := api.NewRouter(
 		authMw, corsMw, logMw, recMw,
 		authHandler, userHandler, calendarHandler, moodHandler,
 		dashboardHandler, insightsHandler,
 		sleepHandler, circadianHandler,
+		constellationHandler,
 	)
 
 	// Start cron scheduler

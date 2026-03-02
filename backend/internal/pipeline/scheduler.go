@@ -5,11 +5,13 @@ import (
 	"log/slog"
 	"time"
 
+	"pulse-api/internal/collectors/google"
+	"pulse-api/internal/constellation"
+	"pulse-api/internal/db"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/robfig/cron/v3"
 	"golang.org/x/oauth2"
-	"pulse-api/internal/collectors/google"
-	"pulse-api/internal/db"
 )
 
 // StartScheduler starts the background cron jobs for calendar sync, feature extraction,
@@ -39,6 +41,13 @@ func StartScheduler(ctx context.Context, pool *pgxpool.Pool, oauthConfig *oauth2
 		start := time.Now()
 		extractCircadianFeaturesAllUsers(ctx, pool)
 		slog.Info("cron: circadian extraction complete", "duration_ms", time.Since(start).Milliseconds())
+	})
+
+	// Every 15 min: expire inactive peer pool entries (> 30 min without heartbeat)
+	_, _ = c.AddFunc("*/15 * * * *", func() {
+		if err := constellation.RefreshAvailability(ctx, pool); err != nil {
+			slog.Warn("cron: peer pool refresh failed", "err", err)
+		}
 	})
 
 	c.Start()

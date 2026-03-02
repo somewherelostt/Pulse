@@ -18,7 +18,7 @@ export const HoverVisual = ({ text, children, className }: HoverVisualProps) => 
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <span className="relative z-10 underline decoration-pulse-primary/30 underline-offset-8 group-hover:decoration-pulse-primary transition-colors duration-300">
+      <span className="relative z-10 transition-all duration-300 group-hover:font-serif group-hover:italic group-hover:text-pulse-primary">
         {text}
       </span>
       <AnimatePresence>

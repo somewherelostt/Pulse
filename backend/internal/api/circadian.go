@@ -6,11 +6,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"pulse-api/internal/db"
 	circadianfeat "pulse-api/internal/features/circadian"
 	"pulse-api/internal/llm"
 	"pulse-api/internal/middleware"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // CircadianHandler handles circadian feature and narrative endpoints.

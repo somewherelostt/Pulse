@@ -57,9 +57,29 @@ PULSE_IDEA_ANALYSIS_AND_REFERENCE.md
 # AI assistants
 .claude/
 .cursor/
+.copilot/
 
 # Go binaries and build artifacts
 backend/bin/
+backend/*.exe
 *.exe
 *.test
 *.out
+
+# Go vendor directory
+backend/vendor/
+
+# OS specific
+.DS_Store
+Thumbs.db
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.cache
+
+# Lock files (optional - remove if you want to commit them)
+# package-lock.json
+# bun.lock

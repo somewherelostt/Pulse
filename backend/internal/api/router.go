@@ -20,6 +20,7 @@ func NewRouter(
 	insightsHandler *InsightsHandler,
 	sleepHandler *SleepHandler,
 	circadianHandler *CircadianHandler,
+	constellationHandler *ConstellationHandler,
 ) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(chimw.RealIP)
@@ -39,6 +40,7 @@ func NewRouter(
 	r.Get("/connect", serveFile("web/connect.html"))
 	r.Get("/log", serveFile("web/log.html"))
 	r.Get("/circadian", serveFile("web/circadian.html"))
+	r.Get("/constellation", serveFile("web/constellation.html"))
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Post("/auth/anonymous", authHandler.Anonymous)
@@ -66,6 +68,16 @@ func NewRouter(
 			r.Get("/circadian/dashboard", circadianHandler.Dashboard)
 			r.Post("/circadian/extract", circadianHandler.ExtractFeatures)
 			r.Post("/circadian/narrative", circadianHandler.GenerateNarrative)
+
+			// Constellation peer matching + WebRTC signaling
+			r.Post("/constellation/join", constellationHandler.Join)
+			r.Post("/constellation/leave", constellationHandler.Leave)
+			r.Get("/constellation/safety", constellationHandler.Safety)
+			r.Get("/constellation/match", constellationHandler.Match)
+			r.Post("/constellation/session/start", constellationHandler.SessionStart)
+			r.Post("/constellation/session/{id}/end", constellationHandler.SessionEnd)
+			r.Post("/constellation/session/{id}/rate", constellationHandler.SessionRate)
+			r.Get("/constellation/signal/{room_id}", constellationHandler.Signal)
 		})
 	})
 	return r

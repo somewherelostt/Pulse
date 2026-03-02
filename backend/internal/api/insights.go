@@ -7,10 +7,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"pulse-api/internal/db"
 	"pulse-api/internal/llm"
 	"pulse-api/internal/middleware"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type InsightsHandler struct {

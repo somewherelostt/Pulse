@@ -8,10 +8,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"pulse-api/internal/correlation"
 	"pulse-api/internal/db"
 	"pulse-api/internal/middleware"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type DashboardHandler struct {
