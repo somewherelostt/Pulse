@@ -17,6 +17,8 @@ func NewRouter(
 	moodHandler *MoodHandler,
 	dashboardHandler *DashboardHandler,
 	insightsHandler *InsightsHandler,
+	sleepHandler *SleepHandler,
+	circadianHandler *CircadianHandler,
 ) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(chimw.RealIP)
@@ -30,6 +32,12 @@ func NewRouter(
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"status":"ok"}`))
 	})
+
+	// Serve web pages (for standalone Go demo)
+	r.Get("/", serveFile("web/dashboard.html"))
+	r.Get("/connect", serveFile("web/connect.html"))
+	r.Get("/log", serveFile("web/log.html"))
+	r.Get("/circadian", serveFile("web/circadian.html"))
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/calendar/callback", calendarHandler.Callback)
@@ -47,7 +55,22 @@ func NewRouter(
 			r.Get("/dashboard", dashboardHandler.Get)
 			r.Get("/insights/latest", insightsHandler.Latest)
 			r.Post("/insights/generate", insightsHandler.Generate)
+
+			// Sleep endpoints
+			r.Post("/sleep/manual", sleepHandler.LogManual)
+			r.Get("/sleep/range", sleepHandler.GetRange)
+
+			// Circadian endpoints
+			r.Get("/circadian/dashboard", circadianHandler.Dashboard)
+			r.Post("/circadian/extract", circadianHandler.ExtractFeatures)
+			r.Post("/circadian/narrative", circadianHandler.GenerateNarrative)
 		})
 	})
 	return r
+}
+
+func serveFile(path string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, path)
+	}
 }
