@@ -2,7 +2,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 export async function apiFetch<T>(
   path: string,
-  options?: RequestInit & { token?: string }
+  options?: RequestInit & { token?: string },
 ): Promise<T> {
   const { token, ...rest } = options ?? {};
   const res = await fetch(`${API_URL}${path}`, {
@@ -26,10 +26,12 @@ export async function apiFetch<T>(
 import type { User, MoodLog, DashboardResponse, InsightData } from "./types";
 
 export const api = {
-  getMe: (token: string) =>
-    apiFetch<User>("/api/v1/users/me", { token }),
+  getMe: (token: string) => apiFetch<User>("/api/v1/users/me", { token }),
 
-  upsertMe: (token: string, data: Partial<Pick<User, "work_start_hour" | "work_end_hour" | "timezone">>) =>
+  upsertMe: (
+    token: string,
+    data: Partial<Pick<User, "work_start_hour" | "work_end_hour" | "timezone">>,
+  ) =>
     apiFetch<User>("/api/v1/users/me", {
       method: "POST",
       body: JSON.stringify(data),
@@ -54,7 +56,9 @@ export const api = {
 
   logMood: (
     token: string,
-    data: Partial<Pick<MoodLog, "score" | "energy" | "anxiety" | "note" | "tags">>
+    data: Partial<
+      Pick<MoodLog, "score" | "energy" | "anxiety" | "note" | "tags">
+    >,
   ) =>
     apiFetch<MoodLog>("/api/v1/mood", {
       method: "POST",
@@ -76,4 +80,72 @@ export const api = {
       method: "POST",
       token,
     }),
+
+  // Constellation peer matching APIs
+  constellationJoin: (token: string) =>
+    apiFetch<{ pool_id: string; status: string }>(
+      "/api/v1/constellation/join",
+      {
+        method: "POST",
+        body: JSON.stringify({ opt_in_confirmed: true }),
+        token,
+      },
+    ),
+
+  constellationLeave: (token: string) =>
+    apiFetch<{ status: string }>("/api/v1/constellation/leave", {
+      method: "POST",
+      token,
+    }),
+
+  constellationSafety: (token: string) =>
+    apiFetch<{ show_crisis_resources: boolean; recommendation: string }>(
+      "/api/v1/constellation/safety",
+      { token },
+    ),
+
+  constellationMatch: (token: string) =>
+    apiFetch<{
+      match_found: boolean;
+      match_id?: string;
+      similarity?: number;
+      shared_patterns?: string[];
+      context_hint?: string;
+      retry_after?: number;
+      reason?: string;
+    }>("/api/v1/constellation/match", { token }),
+
+  constellationSessionStart: (token: string, matchId: string) =>
+    apiFetch<{ room_id: string; context: string; similarity: number }>(
+      "/api/v1/constellation/session/start",
+      {
+        method: "POST",
+        body: JSON.stringify({ match_id: matchId }),
+        token,
+      },
+    ),
+
+  constellationSessionEnd: (token: string, sessionId: string) =>
+    apiFetch<{ status: string }>(
+      `/api/v1/constellation/session/${sessionId}/end`,
+      {
+        method: "POST",
+        token,
+      },
+    ),
+
+  constellationSessionRate: (
+    token: string,
+    sessionId: string,
+    rating: number,
+    wouldTalkAgain: boolean,
+  ) =>
+    apiFetch<{ status: string }>(
+      `/api/v1/constellation/session/${sessionId}/rate`,
+      {
+        method: "POST",
+        body: JSON.stringify({ rating, would_talk_again: wouldTalkAgain }),
+        token,
+      },
+    ),
 };

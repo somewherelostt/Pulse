@@ -2,8 +2,19 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Shield, Network, Heart, Zap, ArrowRight, Users, AlertCircle } from "lucide-react";
+import {
+  Shield,
+  Network,
+  Heart,
+  Zap,
+  ArrowRight,
+  Users,
+  AlertCircle,
+} from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { api } from "@/lib/api";
 import { Sidebar } from "@/components/app/Sidebar";
+import { PeerSession } from "@/components/app/PeerSession";
 
 // Demo fingerprint data — represents a behavioral profile
 const DEMO_FINGERPRINT = {
@@ -33,7 +44,8 @@ const DEMO_MATCHES = [
     patterns: ["High meeting density", "Evening energy dip"],
     status: "Recovered",
     statusColor: "text-emerald-400",
-    context: "Similar burnout spiral 3 weeks ago — emerged after reducing back-to-back meetings by 40%.",
+    context:
+      "Similar burnout spiral 3 weeks ago — emerged after reducing back-to-back meetings by 40%.",
     weeksAgo: 3,
   },
   {
@@ -43,7 +55,8 @@ const DEMO_MATCHES = [
     patterns: ["After-hours drift", "Focus fragmentation"],
     status: "Active",
     statusColor: "text-pulse-accent-warm",
-    context: "Currently navigating the same pattern. Connected 2 others through it already.",
+    context:
+      "Currently navigating the same pattern. Connected 2 others through it already.",
     weeksAgo: null,
   },
   {
@@ -53,15 +66,28 @@ const DEMO_MATCHES = [
     patterns: ["Calendar overload", "Mood dip lag"],
     status: "Recovered",
     statusColor: "text-emerald-400",
-    context: "Hit the same wall during a product launch. Found anchor points that helped.",
+    context:
+      "Hit the same wall during a product launch. Found anchor points that helped.",
     weeksAgo: 6,
   },
 ];
 
 const PRINCIPLES = [
-  { icon: Shield, title: "Anonymous by default", body: "No name, no photo. Your identity stays yours." },
-  { icon: Network, title: "Pattern-matched", body: "Behavioral fingerprint only — not a diagnosis." },
-  { icon: Heart, title: "Human, not AI", body: "Real people who've been where you are." },
+  {
+    icon: Shield,
+    title: "Anonymous by default",
+    body: "No name, no photo. Your identity stays yours.",
+  },
+  {
+    icon: Network,
+    title: "Pattern-matched",
+    body: "Behavioral fingerprint only — not a diagnosis.",
+  },
+  {
+    icon: Heart,
+    title: "Human, not AI",
+    body: "Real people who've been where you are.",
+  },
 ];
 
 function FingerprintRadar({ data }: { data: Record<string, number> }) {
@@ -99,11 +125,13 @@ function FingerprintRadar({ data }: { data: Record<string, number> }) {
       {[0.25, 0.5, 0.75, 1].map((t) => (
         <polygon
           key={t}
-          points={points.map((p) => {
-            const angle = Math.atan2(p.y - cy, p.x - cx);
-            const rr = r * t;
-            return `${cx + rr * Math.cos(angle)},${cy + rr * Math.sin(angle)}`;
-          }).join(" ")}
+          points={points
+            .map((p) => {
+              const angle = Math.atan2(p.y - cy, p.x - cx);
+              const rr = r * t;
+              return `${cx + rr * Math.cos(angle)},${cy + rr * Math.sin(angle)}`;
+            })
+            .join(" ")}
           fill="none"
           stroke="rgba(110,123,242,0.1)"
           strokeWidth="1"
@@ -111,7 +139,15 @@ function FingerprintRadar({ data }: { data: Record<string, number> }) {
       ))}
       {/* Axis lines */}
       {points.map((p, i) => (
-        <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="rgba(110,123,242,0.15)" strokeWidth="1" />
+        <line
+          key={i}
+          x1={cx}
+          y1={cy}
+          x2={p.x}
+          y2={p.y}
+          stroke="rgba(110,123,242,0.15)"
+          strokeWidth="1"
+        />
       ))}
       {/* Data polygon */}
       <motion.polygon
@@ -142,31 +178,152 @@ function FingerprintRadar({ data }: { data: Record<string, number> }) {
 }
 
 export default function ConstellationPage() {
+  const [token, setToken] = useState<string | null>(null);
   const [joined, setJoined] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [matching, setMatching] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<string | null>(null);
   const [moodLoggedToday] = useState(false);
+  const [activeSession, setActiveSession] = useState<{
+    roomId: string;
+    sessionId: string;
+    context: string;
+    similarity: number;
+  } | null>(null);
+  const [showRating, setShowRating] = useState<string | null>(null);
 
-  // Check if user is in peer pool (demo: use localStorage)
+  const supabase = createClient();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        window.location.href = "/auth";
+        return;
+      }
+      setToken(session.access_token ?? null);
+    });
+  }, [supabase.auth]);
+
+  // Check if user is in peer pool
   useEffect(() => {
     const inPool = localStorage.getItem("constellation_joined") === "1";
     setJoined(inPool);
   }, []);
 
   const handleJoin = async () => {
+    if (!token) return;
     setLoading(true);
-    // Simulate network join
-    await new Promise((r) => setTimeout(r, 1200));
-    localStorage.setItem("constellation_joined", "1");
-    setJoined(true);
-    setLoading(false);
+    try {
+      await api.constellationJoin(token);
+      localStorage.setItem("constellation_joined", "1");
+      setJoined(true);
+    } catch (error) {
+      console.error("Failed to join pool:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLeave = async () => {
-    localStorage.removeItem("constellation_joined");
-    setJoined(false);
-    setSelectedMatch(null);
+    if (!token) return;
+    try {
+      await api.constellationLeave(token);
+      localStorage.removeItem("constellation_joined");
+      setJoined(false);
+      setSelectedMatch(null);
+    } catch (error) {
+      console.error("Failed to leave pool:", error);
+    }
   };
+
+  const handleRequestSession = async (matchId: string) => {
+    if (!token) return;
+    setMatching(true);
+    try {
+      // First get a match
+      const matchResult = await api.constellationMatch(token);
+      
+      if (!matchResult.match_found) {
+        alert("No match found. Please try again in a moment.");
+        setMatching(false);
+        return;
+      }
+
+      // Start the session
+      const sessionResult = await api.constellationSessionStart(token, matchResult.match_id!);
+      
+      setActiveSession({
+        roomId: sessionResult.room_id,
+        sessionId: matchResult.match_id!,
+        context: sessionResult.context,
+        similarity: sessionResult.similarity,
+      });
+    } catch (error) {
+      console.error("Failed to start session:", error);
+      alert("Failed to start session. Please try again.");
+    } finally {
+      setMatching(false);
+    }
+  };
+
+  const handleEndSession = (sessionId: string) => {
+    setActiveSession(null);
+    setShowRating(sessionId);
+  };
+
+  const handleRateSession = async (rating: number, wouldTalkAgain: boolean) => {
+    if (!token || !showRating) return;
+    try {
+      await api.constellationSessionRate(token, showRating, rating, wouldTalkAgain);
+      setShowRating(null);
+      setSelectedMatch(null);
+    } catch (error) {
+      console.error("Failed to rate session:", error);
+    }
+  };
+
+  if (activeSession) {
+    return (
+      <PeerSession
+        roomId={activeSession.roomId}
+        sessionId={activeSession.sessionId}
+        matchContext={activeSession.context}
+        similarity={activeSession.similarity}
+        token={token!}
+        onEnd={handleEndSession}
+      />
+    );
+  }
+
+  if (showRating) {
+    return (
+      <div className="min-h-screen bg-pulse-bg flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-pulse-surface border border-pulse-border rounded-xl p-6">
+          <h2 className="text-lg font-medium text-pulse-text-primary mb-2">How was the session?</h2>
+          <p className="text-sm text-pulse-text-muted mb-6">
+            Your feedback helps improve matching for everyone.
+          </p>
+          <div className="flex gap-2 mb-6">
+            {[1, 2, 3, 4, 5].map((rating) => (
+              <button
+                key={rating}
+                onClick={() => handleRateSession(rating, rating >= 4)}
+                className="flex-1 py-3 px-4 rounded-lg border border-pulse-border hover:border-pulse-primary hover:bg-pulse-primary/5 transition-all text-sm font-medium text-pulse-text-primary"
+              >
+                {rating}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setShowRating(null)}
+            className="text-sm text-pulse-text-muted hover:text-pulse-text-primary"
+          >
+            Skip rating →
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-pulse-bg">
@@ -185,7 +342,8 @@ export default function ConstellationPage() {
               Peer Matching
             </h1>
             <p className="text-pulse-text-muted text-sm max-w-xl">
-              Anonymously match with people who've been where you are now — based on behavioral patterns, not words.
+              Anonymously match with people who've been where you are now —
+              based on behavioral patterns, not words.
             </p>
           </div>
 
@@ -208,7 +366,9 @@ export default function ConstellationPage() {
                 <div className="space-y-2">
                   {Object.entries(DEMO_FINGERPRINT).map(([k, v]) => (
                     <div key={k} className="flex items-center gap-2">
-                      <span className="text-[10px] text-pulse-text-muted w-28 truncate">{FINGERPRINT_LABELS[k]}</span>
+                      <span className="text-[10px] text-pulse-text-muted w-28 truncate">
+                        {FINGERPRINT_LABELS[k]}
+                      </span>
                       <div className="flex-1 h-1 bg-pulse-border rounded-full overflow-hidden">
                         <motion.div
                           className="h-full bg-pulse-primary rounded-full"
@@ -226,13 +386,17 @@ export default function ConstellationPage() {
               </div>
 
               {/* Pool status card */}
-              <div className={`border rounded-xl p-4 transition-all ${
-                joined
-                  ? "bg-pulse-primary/5 border-pulse-primary/30"
-                  : "bg-pulse-surface border-pulse-border"
-              }`}>
+              <div
+                className={`border rounded-xl p-4 transition-all ${
+                  joined
+                    ? "bg-pulse-primary/5 border-pulse-primary/30"
+                    : "bg-pulse-surface border-pulse-border"
+                }`}
+              >
                 <div className="flex items-center gap-2 mb-3">
-                  <div className={`w-2 h-2 rounded-full ${joined ? "bg-pulse-primary animate-pulse" : "bg-pulse-border"}`} />
+                  <div
+                    className={`w-2 h-2 rounded-full ${joined ? "bg-pulse-primary animate-pulse" : "bg-pulse-border"}`}
+                  />
                   <span className="text-[10px] font-mono uppercase tracking-widest text-pulse-text-muted">
                     {joined ? "In peer pool" : "Not in pool"}
                   </span>
@@ -240,7 +404,8 @@ export default function ConstellationPage() {
                 {joined ? (
                   <div>
                     <p className="text-xs text-pulse-text-secondary mb-3">
-                      Your anonymized behavioral fingerprint is active. You'll be matched when a compatible peer is found.
+                      Your anonymized behavioral fingerprint is active. You'll
+                      be matched when a compatible peer is found.
                     </p>
                     <div className="flex items-center gap-2 text-[10px] font-mono text-pulse-text-muted mb-4">
                       <Users className="w-3 h-3" />
@@ -256,7 +421,8 @@ export default function ConstellationPage() {
                 ) : (
                   <div>
                     <p className="text-xs text-pulse-text-secondary mb-4">
-                      Share your behavioral fingerprint anonymously to find people who've navigated the same patterns.
+                      Share your behavioral fingerprint anonymously to find
+                      people who've navigated the same patterns.
                     </p>
                     <button
                       onClick={handleJoin}
@@ -283,7 +449,8 @@ export default function ConstellationPage() {
               <div className="flex items-start gap-2 p-3 rounded-lg bg-pulse-surface-raised border border-pulse-border/50">
                 <AlertCircle className="w-3.5 h-3.5 text-pulse-text-muted shrink-0 mt-0.5" />
                 <p className="text-[10px] text-pulse-text-muted leading-relaxed">
-                  Sessions are 45 min max, end-to-end encrypted, and never recorded. If you're in crisis: call 988.
+                  Sessions are 45 min max, end-to-end encrypted, and never
+                  recorded. If you're in crisis: call 988.
                 </p>
               </div>
             </div>
@@ -316,8 +483,12 @@ export default function ConstellationPage() {
                           transition={{ delay: i * 0.1 }}
                         >
                           <Icon className="w-5 h-5 text-pulse-primary mx-auto mb-2" />
-                          <p className="text-xs font-medium text-pulse-text-primary mb-1">{title}</p>
-                          <p className="text-[10px] text-pulse-text-muted">{body}</p>
+                          <p className="text-xs font-medium text-pulse-text-primary mb-1">
+                            {title}
+                          </p>
+                          <p className="text-[10px] text-pulse-text-muted">
+                            {body}
+                          </p>
                         </motion.div>
                       ))}
                     </div>
@@ -327,7 +498,9 @@ export default function ConstellationPage() {
                 /* Post-join — show matches */
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-sm font-medium text-pulse-text-primary">Pattern matches</h2>
+                    <h2 className="text-sm font-medium text-pulse-text-primary">
+                      Pattern matches
+                    </h2>
                     <span className="text-[10px] font-mono text-pulse-text-muted uppercase tracking-widest">
                       {DEMO_MATCHES.length} found
                     </span>
@@ -346,7 +519,11 @@ export default function ConstellationPage() {
                             ? "border-pulse-primary/50 bg-pulse-primary/5"
                             : "border-pulse-border hover:border-pulse-border/80"
                         }`}
-                        onClick={() => setSelectedMatch(selectedMatch === match.id ? null : match.id)}
+                        onClick={() =>
+                          setSelectedMatch(
+                            selectedMatch === match.id ? null : match.id,
+                          )
+                        }
                       >
                         <div className="flex items-start gap-4">
                           <div className="w-10 h-10 rounded-full bg-pulse-surface-raised border border-pulse-border flex items-center justify-center text-sm font-mono text-pulse-text-secondary shrink-0">
@@ -355,17 +532,23 @@ export default function ConstellationPage() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-[10px] font-mono text-pulse-text-muted">
-                                {Math.round(match.similarity * 100)}% pattern match
+                                {Math.round(match.similarity * 100)}% pattern
+                                match
                               </span>
                               <div className="flex-1 h-px bg-pulse-border" />
-                              <span className={`text-[10px] font-mono ${match.statusColor}`}>
+                              <span
+                                className={`text-[10px] font-mono ${match.statusColor}`}
+                              >
                                 {match.status}
                                 {match.weeksAgo && ` · ${match.weeksAgo}w ago`}
                               </span>
                             </div>
                             <div className="flex flex-wrap gap-1.5 mb-2">
                               {match.patterns.map((p) => (
-                                <span key={p} className="text-[10px] px-2 py-0.5 rounded-full bg-pulse-primary/10 text-pulse-text-secondary border border-pulse-primary/10">
+                                <span
+                                  key={p}
+                                  className="text-[10px] px-2 py-0.5 rounded-full bg-pulse-primary/10 text-pulse-text-secondary border border-pulse-primary/10"
+                                >
                                   {p}
                                 </span>
                               ))}
@@ -382,10 +565,26 @@ export default function ConstellationPage() {
                                   <p className="text-xs text-pulse-text-secondary mb-3 pt-2 border-t border-pulse-border/50">
                                     {match.context}
                                   </p>
-                                  <button className="flex items-center gap-2 text-xs font-medium text-pulse-primary hover:text-pulse-primary/80 transition-colors">
-                                    <Zap className="w-3.5 h-3.5" />
-                                    Request anonymous session
-                                    <ArrowRight className="w-3 h-3" />
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRequestSession(match.id);
+                                    }}
+                                    disabled={matching}
+                                    className="flex items-center gap-2 text-xs font-medium text-pulse-primary hover:text-pulse-primary/80 transition-colors disabled:opacity-50"
+                                  >
+                                    {matching ? (
+                                      <>
+                                        <div className="w-3.5 h-3.5 border-2 border-pulse-primary/30 border-t-pulse-primary rounded-full animate-spin" />
+                                        Finding room...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Zap className="w-3.5 h-3.5" />
+                                        Request anonymous session
+                                        <ArrowRight className="w-3 h-3" />
+                                      </>
+                                    )}
                                   </button>
                                 </motion.div>
                               )}
@@ -403,14 +602,30 @@ export default function ConstellationPage() {
                     </p>
                     <div className="space-y-2">
                       {[
-                        { step: "01", text: "Request is sent anonymously. Peer accepts or declines." },
-                        { step: "02", text: "End-to-end encrypted video room opens. 45-min limit." },
-                        { step: "03", text: "No names, no recording. Only the conversation exists." },
-                        { step: "04", text: "Rate the session (1–5) to improve matching for others." },
+                        {
+                          step: "01",
+                          text: "Request is sent anonymously. Peer accepts or declines.",
+                        },
+                        {
+                          step: "02",
+                          text: "End-to-end encrypted video room opens. 45-min limit.",
+                        },
+                        {
+                          step: "03",
+                          text: "No names, no recording. Only the conversation exists.",
+                        },
+                        {
+                          step: "04",
+                          text: "Rate the session (1–5) to improve matching for others.",
+                        },
                       ].map(({ step, text }) => (
                         <div key={step} className="flex gap-3 items-start">
-                          <span className="text-[10px] font-mono text-pulse-primary/60 w-5 shrink-0">{step}</span>
-                          <p className="text-[11px] text-pulse-text-secondary">{text}</p>
+                          <span className="text-[10px] font-mono text-pulse-primary/60 w-5 shrink-0">
+                            {step}
+                          </span>
+                          <p className="text-[11px] text-pulse-text-secondary">
+                            {text}
+                          </p>
                         </div>
                       ))}
                     </div>
@@ -427,17 +642,26 @@ export default function ConstellationPage() {
 
 // Mini constellation visualization
 function ConstellationVisual() {
-  const nodes = useMemo(() => [
-    { id: 1, x: 18, y: 28, initial: "A" },
-    { id: 2, x: 38, y: 72, initial: "M" },
-    { id: 3, x: 68, y: 18, initial: "S" },
-    { id: 4, x: 82, y: 58, initial: "R" },
-    { id: 5, x: 52, y: 42, initial: "YOU", isUser: true },
-    { id: 6, x: 28, y: 14, initial: "K" },
-    { id: 7, x: 14, y: 62, initial: "J" },
-  ], []);
+  const nodes = useMemo(
+    () => [
+      { id: 1, x: 18, y: 28, initial: "A" },
+      { id: 2, x: 38, y: 72, initial: "M" },
+      { id: 3, x: 68, y: 18, initial: "S" },
+      { id: 4, x: 82, y: 58, initial: "R" },
+      { id: 5, x: 52, y: 42, initial: "YOU", isUser: true },
+      { id: 6, x: 28, y: 14, initial: "K" },
+      { id: 7, x: 14, y: 62, initial: "J" },
+    ],
+    [],
+  );
 
-  const connections = [[5, 1], [5, 3], [5, 4], [1, 6], [7, 2]];
+  const connections = [
+    [5, 1],
+    [5, 3],
+    [5, 4],
+    [1, 6],
+    [7, 2],
+  ];
 
   return (
     <>
@@ -448,8 +672,10 @@ function ConstellationVisual() {
           return (
             <motion.line
               key={idx}
-              x1={`${from.x}%`} y1={`${from.y}%`}
-              x2={`${to.x}%`} y2={`${to.y}%`}
+              x1={`${from.x}%`}
+              y1={`${from.y}%`}
+              x2={`${to.x}%`}
+              y2={`${to.y}%`}
               stroke="rgba(110,123,242,0.25)"
               strokeWidth="1"
               initial={{ pathLength: 0 }}
@@ -475,7 +701,11 @@ function ConstellationVisual() {
                 : "bg-pulse-surface-raised text-pulse-text-muted border-pulse-border"
             }`}
             animate={node.isUser ? { scale: [1, 1.08, 1] } : { y: [0, -3, 0] }}
-            transition={{ duration: node.isUser ? 2 : 3 + node.id * 0.3, repeat: Infinity, ease: "easeInOut" }}
+            transition={{
+              duration: node.isUser ? 2 : 3 + node.id * 0.3,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
           >
             {node.initial}
           </motion.div>
