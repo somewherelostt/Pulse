@@ -24,7 +24,11 @@ func Config(clientID, clientSecret, redirectURI string) *oauth2.Config {
 }
 
 func AuthCodeURL(cfg *oauth2.Config, state string) string {
-	return cfg.AuthCodeURL(state, oauth2.AccessTypeOffline, oauth2.ApprovalForce, oauth2.Prompt("consent"))
+	return cfg.AuthCodeURL(state,
+		oauth2.AccessTypeOffline,
+		oauth2.ApprovalForce,
+		oauth2.SetAuthURLParam("prompt", "consent"),
+	)
 }
 
 func Exchange(ctx context.Context, cfg *oauth2.Config, code string) (*oauth2.Token, error) {

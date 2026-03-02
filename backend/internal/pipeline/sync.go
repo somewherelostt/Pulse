@@ -12,7 +12,7 @@ import (
 	"pulse-api/internal/features/calendar"
 )
 
-func SyncUserCalendar(ctx context.Context, pool *db.Pool, userID, supabaseUID string, lookbackDays, workStartHour, workEndHour int) (eventsFetched int, err error) {
+func SyncUserCalendar(ctx context.Context, pool *pgxpool.Pool, userID, supabaseUID string, lookbackDays, workStartHour, workEndHour int) (eventsFetched int, err error) {
 	// Get OAuth token
 	access, refresh, expiry, err := db.GetOAuthToken(ctx, pool, userID, "google")
 	if err != nil || access == "" {
@@ -36,7 +36,7 @@ func HashTitle(s string) string {
 	return hex.EncodeToString(h[:])
 }
 
-func ExtractAndStoreFeatures(ctx context.Context, pool *db.Pool, userID string, workStartHour, workEndHour int) error {
+func ExtractAndStoreFeatures(ctx context.Context, pool *pgxpool.Pool, userID string, workStartHour, workEndHour int) error {
 	to := time.Now()
 	from := to.AddDate(0, 0, -31)
 	days, err := db.RawEventsByUserAndDateRange(ctx, pool, userID, from, to)
