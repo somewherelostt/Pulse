@@ -1,8 +1,9 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, LayoutDashboard, Calendar, Heart, Lightbulb, Lock, Cloud } from "lucide-react";
+import { Activity, LayoutDashboard, Calendar, Heart, Lightbulb, Lock, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -17,11 +18,11 @@ const NAV = [
   { href: "/dashboard#calendar", label: "Calendar", icon: Calendar },
   { href: "/log", label: "Mood Log", icon: Heart },
   { href: "/dashboard#insights", label: "Insights", icon: Lightbulb },
+  { href: "/dashboard/constellation", label: "Constellation", icon: Network, badge: "New" },
 ];
 const LOCKED = [
   { label: "Sleep", sub: "Coming in Layer 2", icon: Lock },
   { label: "Browser", sub: "Coming in Layer 3", icon: Lock },
-  { label: "Constellation", sub: "Coming in Layer 5", icon: Lock },
 ];
 
 export function Sidebar({ moodLoggedToday }: { moodLoggedToday: boolean }) {
@@ -36,8 +37,8 @@ export function Sidebar({ moodLoggedToday }: { moodLoggedToday: boolean }) {
       </div>
 
       <nav className="flex-1 p-3 space-y-0.5">
-        {NAV.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || (href === "/dashboard" && pathname?.startsWith("/dashboard"));
+        {NAV.map(({ href, label, icon: Icon, badge }: { href: string; label: string; icon: React.ElementType; badge?: string }) => {
+          const active = pathname === href || (href !== "/dashboard" && pathname?.startsWith(href));
           return (
             <Link
               key={href}
@@ -49,7 +50,12 @@ export function Sidebar({ moodLoggedToday }: { moodLoggedToday: boolean }) {
               }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
-              {label}
+              <span className="flex-1">{label}</span>
+              {badge && (
+                <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-pulse-primary/15 text-pulse-primary border border-pulse-primary/20">
+                  {badge}
+                </span>
+              )}
             </Link>
           );
         })}

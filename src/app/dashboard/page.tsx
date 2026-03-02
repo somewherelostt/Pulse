@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, ArrowRight, Network, TrendingDown, TrendingUp } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { api } from "@/lib/api";
 import type { DashboardResponse } from "@/lib/types";
@@ -20,6 +20,19 @@ function greeting() {
   return "Good evening.";
 }
 
+function BurnoutRiskBadge({ score }: { score: number }) {
+  const level =
+    score >= 0.7 ? { label: "High Risk", color: "text-pulse-danger bg-pulse-danger/10 border-pulse-danger/30" }
+    : score >= 0.45 ? { label: "Elevated", color: "text-pulse-accent-warm bg-pulse-accent-warm/10 border-pulse-accent-warm/30" }
+    : { label: "Normal Range", color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/30" };
+
+  return (
+    <span className={`text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full border ${level.color}`}>
+      {level.label}
+    </span>
+  );
+}
+
 export default function DashboardPage() {
   const [token, setToken] = useState<string | null>(null);
   const [data, setData] = useState<DashboardResponse | null>(null);
@@ -34,7 +47,6 @@ export default function DashboardPage() {
       const d = await api.getDashboard(t);
       setData(d);
 
-      // Auto-fix timezone if it's still UTC but browser shows different timezone
       const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
       if (d.user.timezone === "UTC" && browserTz !== "UTC") {
         api.upsertMe(t, { timezone: browserTz }).catch(console.error);
@@ -88,42 +100,47 @@ export default function DashboardPage() {
     (d) => d.date === new Date().toISOString().slice(0, 10),
   )?.mood_score;
 
+  // Derive a simple burnout risk score from meeting density + after hours
+  const burnoutRisk = data
+    ? Math.min(1, ((data.metrics.avg_meeting_density_pct ?? 0) * 0.7 + (data.timeline?.[0]?.after_hours_mins ?? 0) / 500))
+    : 0;
+
   return (
     <div className="min-h-screen bg-pulse-bg">
       <Sidebar moodLoggedToday={moodLoggedToday} />
       <main className="pl-[220px] min-h-screen">
         <div className="p-6 max-w-6xl">
-          <div className="flex items-center justify-between mb-8">
+          {/* Header */}
+          <div className="flex items-start justify-between mb-8">
             <div>
               <h1 className="text-2xl font-light text-pulse-text-primary">
                 {greeting()}
               </h1>
-              <p className="text-pulse-text-muted text-sm">
+              <p className="text-pulse-text-muted text-sm mt-0.5">
                 {new Date().toLocaleDateString("en-US", {
                   weekday: "long",
                   month: "long",
                   day: "numeric",
-                  year: "numeric",
                 })}
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              {data && data.metrics.data_days >= 7 && (
+                <BurnoutRiskBadge score={burnoutRisk} />
+              )}
               <span className="text-xs text-pulse-text-muted">
-                Last synced:{" "}
                 {data?.sync_status?.last_synced_at
-                  ? new Date(data.sync_status.last_synced_at).toLocaleString()
-                  : "Never"}
+                  ? `Synced ${new Date(data.sync_status.last_synced_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+                  : "Never synced"}
               </span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleSync}
                 disabled={syncing || !token}
-                className="border-pulse-border"
+                className="border-pulse-border h-8 w-8 p-0"
               >
-                <RefreshCw
-                  className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`}
-                />
+                <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} />
               </Button>
             </div>
           </div>
@@ -131,74 +148,75 @@ export default function DashboardPage() {
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="h-28 bg-pulse-surface border border-pulse-border rounded-xl animate-pulse"
-                />
+                <div key={i} className="h-28 bg-pulse-surface border border-pulse-border rounded-xl animate-pulse" />
               ))}
             </div>
           ) : data && data.metrics.data_days >= 7 ? (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+              {/* Metric cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 <MetricCard
                   label="Meeting Load"
                   value={`${Math.round((data.metrics.avg_meeting_density_pct ?? 0) * 100)}%`}
                   delta={
-                    data.metrics.meeting_density_trend === "up"
-                      ? "↑ from last week"
-                      : data.metrics.meeting_density_trend === "down"
-                        ? "↓ from last week"
-                        : "Stable"
+                    data.metrics.meeting_density_trend === "up" ? "↑ from last week"
+                    : data.metrics.meeting_density_trend === "down" ? "↓ from last week"
+                    : "Stable"
                   }
-                  deltaDirection={
-                    data.metrics.meeting_density_trend === "up"
-                      ? "up-bad"
-                      : "down-good"
-                  }
+                  deltaDirection={data.metrics.meeting_density_trend === "up" ? "up-bad" : "down-good"}
                   severity={
-                    (data.metrics.avg_meeting_density_pct ?? 0) > 0.7
-                      ? "critical"
-                      : (data.metrics.avg_meeting_density_pct ?? 0) > 0.5
-                        ? "warning"
-                        : "healthy"
+                    (data.metrics.avg_meeting_density_pct ?? 0) > 0.7 ? "critical"
+                    : (data.metrics.avg_meeting_density_pct ?? 0) > 0.5 ? "warning"
+                    : "healthy"
                   }
-                  tooltip="% of your work window in meetings"
+                  tooltip="% of your work window spent in meetings (7-day avg)"
                 />
                 <MetricCard
                   label="Avg Focus Block"
-                  value={`${Math.round(data.timeline?.[0]?.avg_focus_block_mins ?? 0)} min`}
-                  severity="healthy"
+                  value={`${Math.round(data.timeline?.find(d => d.avg_focus_block_mins != null)?.avg_focus_block_mins ?? 0)} min`}
+                  severity={
+                    (data.timeline?.find(d => d.avg_focus_block_mins != null)?.avg_focus_block_mins ?? 0) < 45 ? "warning" : "healthy"
+                  }
+                  tooltip="Average uninterrupted focus window"
                 />
                 <MetricCard
                   label="7-Day Mood Avg"
                   value={(data.metrics.avg_mood_score ?? 0).toFixed(1)}
-                  delta={data.metrics.mood_trend}
+                  delta={
+                    data.metrics.mood_trend === "up" ? "↑ improving"
+                    : data.metrics.mood_trend === "down" ? "↓ declining"
+                    : "Stable"
+                  }
+                  deltaDirection={data.metrics.mood_trend === "up" ? "up-good" : data.metrics.mood_trend === "down" ? "down-bad" : "down-good"}
                   severity={
-                    (data.metrics.avg_mood_score ?? 0) < 4
-                      ? "critical"
-                      : (data.metrics.avg_mood_score ?? 0) < 6
-                        ? "warning"
-                        : "healthy"
+                    (data.metrics.avg_mood_score ?? 0) < 4 ? "critical"
+                    : (data.metrics.avg_mood_score ?? 0) < 6 ? "warning"
+                    : "healthy"
                   }
                 />
                 <MetricCard
                   label="After-Hours / Day"
-                  value={`${((data.timeline?.[0]?.after_hours_mins ?? 0) / 60).toFixed(1)} hrs`}
-                  severity="healthy"
+                  value={`${((data.timeline?.[0]?.after_hours_mins ?? 0) / 60).toFixed(1)}h`}
+                  severity={(data.timeline?.[0]?.after_hours_mins ?? 0) > 60 ? "warning" : "healthy"}
+                  tooltip="Average minutes worked outside your set hours"
                 />
               </div>
 
-              <div className="mb-8">
-                <h2 className="text-lg font-medium text-pulse-text-primary mb-2">
-                  30-Day Behavioral Fingerprint
-                </h2>
-                <p className="text-pulse-text-muted text-sm mb-4">
-                  {new Date().toLocaleDateString("en-US", {
-                    month: "long",
-                    year: "numeric",
-                  })}{" "}
-                  — last 30 days
-                </p>
+              {/* Timeline */}
+              <div id="calendar" className="mb-8">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h2 className="text-base font-medium text-pulse-text-primary">
+                      30-Day Behavioral Fingerprint
+                    </h2>
+                    <p className="text-pulse-text-muted text-xs mt-0.5">
+                      Calendar density, after-hours drift, and mood overlaid
+                    </p>
+                  </div>
+                  <span className="text-[10px] font-mono text-pulse-text-muted uppercase tracking-widest">
+                    {data.sync_status?.events_fetched ?? 0} events synced
+                  </span>
+                </div>
                 <div className="bg-pulse-surface border border-pulse-border rounded-xl p-4">
                   <TimelineChart
                     data={data.timeline ?? []}
@@ -207,72 +225,101 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              {/* Insight + Today */}
+              <div id="insights" className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <InsightCard
                   insight={data.latest_insight}
                   onGenerate={handleGenerateInsight}
                   isGenerating={insightGenerating}
                 />
-                <div className="bg-pulse-surface border border-pulse-border rounded-xl p-4">
-                  <h3 className="font-medium text-pulse-text-primary mb-2">
-                    Today&apos;s status
-                  </h3>
-                  {!moodLoggedToday ? (
-                    <div>
-                      <p className="text-pulse-text-secondary text-sm mb-2">
-                        Log today&apos;s mood to improve your analysis.
+                <div className="space-y-3">
+                  {/* Today status */}
+                  <div className="bg-pulse-surface border border-pulse-border rounded-xl p-4">
+                    <h3 className="text-[10px] font-mono uppercase tracking-widest text-pulse-text-muted mb-3">
+                      Today
+                    </h3>
+                    {!moodLoggedToday ? (
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-pulse-text-secondary">Mood not logged yet</p>
+                        <Link href="/log">
+                          <Button size="sm" className="bg-pulse-accent text-pulse-bg h-7 text-xs">
+                            Log now →
+                          </Button>
+                        </Link>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-pulse-text-secondary flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-pulse-accent" />
+                        Mood logged. Keep it up.
                       </p>
-                      <Link href="/log">
-                        <Button
-                          size="sm"
-                          className="bg-pulse-accent text-pulse-bg"
-                        >
-                          Log now →
-                        </Button>
-                      </Link>
+                    )}
+                  </div>
+
+                  {/* Constellation nudge */}
+                  <Link href="/dashboard/constellation" className="block group">
+                    <div className="bg-pulse-surface border border-pulse-border rounded-xl p-4 hover:border-pulse-primary/40 transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-pulse-primary/10 flex items-center justify-center shrink-0">
+                          <Network className="w-4 h-4 text-pulse-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <p className="text-sm font-medium text-pulse-text-primary">Constellation</p>
+                            <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-pulse-primary/15 text-pulse-primary border border-pulse-primary/20">New</span>
+                          </div>
+                          <p className="text-xs text-pulse-text-muted">Find peers who've been through your pattern</p>
+                        </div>
+                        <ArrowRight className="w-4 h-4 text-pulse-text-muted group-hover:text-pulse-primary group-hover:translate-x-1 transition-all" />
+                      </div>
                     </div>
-                  ) : (
-                    <p className="text-pulse-text-secondary text-sm">
-                      Mood logged. Keep it up.
-                    </p>
-                  )}
+                  </Link>
                 </div>
               </div>
 
+              {/* Correlations */}
               {data.top_correlations && data.top_correlations.length > 0 && (
                 <div>
-                  <h2 className="text-lg font-medium text-pulse-text-primary mb-2">
-                    What predicts your mood
-                  </h2>
-                  <p className="text-pulse-text-muted text-sm mb-4">
-                    Patterns found across your last 30 days
-                  </p>
-                  <ul className="space-y-3">
+                  <div className="mb-3">
+                    <h2 className="text-base font-medium text-pulse-text-primary">What predicts your mood</h2>
+                    <p className="text-pulse-text-muted text-xs mt-0.5">Lagged correlations across 30 days</p>
+                  </div>
+                  <div className="bg-pulse-surface border border-pulse-border rounded-xl overflow-hidden">
                     {data.top_correlations.map((c, i) => (
-                      <li key={i} className="flex items-center gap-4 text-sm">
-                        <span className="text-pulse-text-primary w-40">
-                          {c.feature_name}
+                      <div
+                        key={i}
+                        className={`flex items-center gap-4 px-4 py-3 text-sm ${
+                          i < data.top_correlations.length - 1 ? "border-b border-pulse-border/50" : ""
+                        }`}
+                      >
+                        <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{
+                          backgroundColor: c.direction === "negative" ? "var(--color-danger)" : "var(--color-accent)"
+                        }} />
+                        <span className="text-pulse-text-primary text-xs font-medium w-36 truncate">
+                          {c.feature_name.replace(/_/g, " ")}
                         </span>
-                        <span className="text-pulse-text-muted">
-                          Affects mood {c.lag_days} days later
+                        <span className="text-pulse-text-muted text-xs">
+                          → mood {c.lag_days === 0 ? "same day" : `${c.lag_days}d later`}
                         </span>
-                        <div className="flex-1 h-2 bg-pulse-bg rounded-full max-w-[120px] overflow-hidden">
+                        <div className="flex-1 h-1.5 bg-pulse-bg rounded-full overflow-hidden max-w-[100px]">
                           <div
-                            className="h-full rounded-full bg-pulse-primary"
+                            className="h-full rounded-full"
                             style={{
                               width: `${Math.min(100, Math.abs(c.correlation) * 100)}%`,
+                              backgroundColor: c.direction === "negative" ? "var(--color-danger)" : "var(--color-accent)",
                             }}
                           />
                         </div>
-                        <span className="font-mono text-pulse-text-secondary">
+                        <span className="font-mono text-[10px] text-pulse-text-secondary w-12 text-right">
                           r={c.correlation.toFixed(2)}
                         </span>
-                        <span className="text-pulse-text-muted">
-                          {c.direction === "negative" ? "↓ mood" : "↑ mood"}
-                        </span>
-                      </li>
+                        {c.direction === "negative" ? (
+                          <TrendingDown className="w-3.5 h-3.5 text-pulse-danger shrink-0" />
+                        ) : (
+                          <TrendingUp className="w-3.5 h-3.5 text-pulse-accent shrink-0" />
+                        )}
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               )}
             </>
@@ -295,17 +342,14 @@ export default function DashboardPage() {
               </div>
               {data?.timeline && data.timeline.length > 0 && (
                 <div className="mt-8">
-                  <h2 className="text-lg font-medium text-pulse-text-primary mb-4">
+                  <h2 className="text-base font-medium text-pulse-text-primary mb-4">
                     30-Day Behavioral Fingerprint
                   </h2>
                   <TimelineChart data={data.timeline} />
                 </div>
               )}
               <div className="mt-8">
-                <EmptyState
-                  title="Pattern analysis unlocks after 7 mood logs"
-                  locked
-                />
+                <EmptyState title="Pattern analysis unlocks after 7 mood logs" locked />
               </div>
             </>
           )}

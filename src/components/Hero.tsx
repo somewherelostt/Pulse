@@ -22,7 +22,7 @@ const Hero = () => {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] as any },
     },
   };
 
@@ -49,8 +49,7 @@ const Hero = () => {
         </motion.div>
 
         <motion.h1 variants={itemVariants} className="text-5xl md:text-7xl lg:text-8xl font-light tracking-tight text-pulse-text-primary leading-[1.1] mb-8">
-          Your mind leaves <br />
-          <HoverVisual text="traces" className="mr-2">
+          Your mind leaves <HoverVisual text="traces" className="mx-2">
             <div className="p-4 flex flex-col gap-2">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-pulse-accent-warm animate-pulse" />
@@ -70,8 +69,8 @@ const Hero = () => {
               <p className="text-[10px] text-pulse-text-muted mt-2">Correlated to high meeting volume (78%)</p>
             </div>
           </HoverVisual>
-          everywhere. <br />
-          <HoverVisual text="Pulse" className="pulse-gradient font-semibold">
+          everywhere.<br />
+          <HoverVisual text="Pulse" className="pulse-gradient font-semibold mr-2">
             <div className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[10px] font-mono text-pulse-text-secondary tracking-widest">SIGNAL QUALITY</span>
@@ -94,10 +93,8 @@ const Hero = () => {
           reads them.
         </motion.h1>
 
-        <motion.p variants={itemVariants} className="max-w-[560px] mx-auto text-lg md:text-xl text-pulse-text-secondary leading-relaxed mb-10">
-          Before you feel it, your calendar, sleep, and browser already know. 
-          Pulse connects the signals — and connects you to someone who found 
-          their way through the same pattern.
+        <motion.p variants={itemVariants} className="max-w-[600px] mx-auto text-lg md:text-xl text-pulse-text-secondary leading-relaxed mb-10">
+          Before you feel it, your calendar, sleep, and browser already know.
         </motion.p>
 
         <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">

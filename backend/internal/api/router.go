@@ -37,6 +37,7 @@ func NewRouter(
 
 	// Serve web pages (for standalone Go demo)
 	r.Get("/", serveFile("web/dashboard.html"))
+	r.Get("/dashboard", serveFile("web/dashboard.html"))
 	r.Get("/connect", serveFile("web/connect.html"))
 	r.Get("/log", serveFile("web/log.html"))
 	r.Get("/circadian", serveFile("web/circadian.html"))
