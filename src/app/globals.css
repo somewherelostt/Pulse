@@ -34,6 +34,37 @@
 }
 
 :root {
+  /* Pulse design tokens (Layer 1) */
+  --bg-base: #0A0A0F;
+  --bg-surface: #111118;
+  --bg-raised: #1A1A24;
+  --border: #2A2A3A;
+  --border-subtle: #1E1E2A;
+  --primary: #6E7BF2;
+  --primary-glow: rgba(110, 123, 242, 0.15);
+  --primary-dim: rgba(110, 123, 242, 0.08);
+  --accent: #4ECDC4;
+  --accent-glow: rgba(78, 205, 196, 0.15);
+  --warning: #F7B731;
+  --warning-glow: rgba(247, 183, 49, 0.15);
+  --danger: #FF6B6B;
+  --text-primary: #F0F0F5;
+  --text-secondary: #8888A0;
+  --text-muted: #4A4A5A;
+  --font-display: 'Geist', 'Inter Display', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'Geist Mono', 'JetBrains Mono', monospace;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.5);
+  --shadow-lg: 0 20px 40px rgba(0,0,0,0.6);
+  --shadow-primary: 0 8px 32px rgba(110,123,242,0.25);
+  --shadow-accent: 0 8px 32px rgba(78,205,196,0.2);
+
   --background: #0A0A0F;
   --foreground: #F0F0F5;
   --card: #111118;
