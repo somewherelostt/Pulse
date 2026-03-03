@@ -1,88 +1,138 @@
+<div align="center">
+
 # Pulse
 
-**Mental health early-warning system powered by behavioral data analysis.**
+**The Mental Health Platform That Sees Burnout Before You Do**
+
+*Behavioral intelligence that detects, understands, and connects — powered by the patterns in your calendar, sleep, and mood*
+
+[Report Bug](https://github.com/yourusername/pulse/issues) · [Request Feature](https://github.com/yourusername/pulse/issues)
+
+</div>
 
 ---
 
-## The Problem
+## The "Why" (Our Story)
 
-Mental health deterioration doesn't happen overnight—it shows up in patterns weeks before people realize they need help:
+We've all been there: you're burning out, but you don't realize it until it's too late. Your calendar looks busy, not bad. Your sleep seems "mostly okay." Your mood feels "fine."
 
-- **12-year average delay** between onset of symptoms and seeking treatment
-- **Behavioral signals go unnoticed**: calendar overload, sleep disruption, browsing patterns, screen time changes
-- **Isolation amplifies decline**: people struggle alone without knowing others have survived similar patterns
-- **Traditional mood trackers miss context**: logging emotions without understanding the behavioral factors behind them
+But somewhere in the data — the meeting density, the fragmented calendar, the slowly shifting sleep schedule — the truth was hiding. Your behavior knew you were struggling weeks before you did.
 
-The gap isn't awareness—it's **detection and connection**. By the time someone realizes they're struggling, weeks of behavioral decline have already occurred.
+We built Pulse because we wanted a system that doesn't wait for you to crash. We wanted something that reads the invisible patterns across your calendar, sleep, and mood — and tells you what's happening before it becomes a crisis.
 
----
+This isn't another mood tracker that asks "how do you feel?" and stops there. This is behavioral intelligence that finds the two-day lag between late-night screen time and mood crashes. That matches you with peers who recovered from your exact pattern. That generates plain-English insights from data you already create.
 
-## The Solution
-
-Pulse aggregates passive behavioral data to detect early warning signals and connects users to peer support:
-
-### 1. **Multi-Source Behavioral Detection**
-
-- **Calendar analysis**: event density, fragmentation, boundary violations, recovery time
-- **Sleep tracking**: consistency, debt, circadian rhythm disruption
-- **Digital behavior**: screen time patterns, browsing activity (local-first, privacy-preserving)
-- **Mood correlation**: cross-reference self-reported mood with behavioral patterns
-
-### 2. **AI-Powered Pattern Analysis**
-
-- LLM-generated insights from 30-day behavioral fingerprints
-- Drift detection using vector embeddings (14-day baseline comparison)
-- Predictive warnings when current trajectory matches historical decline patterns
-- Weekly narrative reports highlighting correlations and intervention points
-
-### 3. **Constellation: Anonymous Peer Matching**
-
-- Match users with peers who **recovered from similar behavioral patterns**
-- Anonymous, encrypted WebRTC sessions (no recording, no data retention)
-- Behavioral fingerprint matching—not demographics or symptoms
-- "Someone who survived this pattern" > generic support groups
-
-### 4. **Privacy-First Architecture**
-
-- **Anonymous by default**: no email required
-- **Row-level security (RLS)**: user-scoped data access only
-- **Local-first extension**: browser data never leaves device raw
-- **One-click data export/delete**: full user control
-- **Crisis escalation**: always surfaces professional resources, never blocks access
+**Mental health tools are built around symptoms. Pulse is built around signals.**
 
 ---
 
-## Use Cases
+## The Problem — Four Real Stories
 
-### Early Intervention
+### 📅 Arjun, 27 — Software Engineer, Bengaluru
 
-**Scenario**: User's calendar shows increasing meeting density, sleep tracker indicates 3+ nights of poor rest, mood logs show gradual decline.
+> *"78 meetings in 19 days. No single one was unreasonable. His calendar looked busy, not bad."*
 
-**Pulse Action**: Generates drift alert with pattern visualization, suggests checking recovery time between high-load days, surfaces professional resources.
+Arjun submitted his resignation letter at 2am, six weeks later. His recovery windows between high-load days had quietly shrunk to zero. No tool flagged the trajectory — not his manager, not any app.
 
----
-
-### Pattern Recognition
-
-**Scenario**: User can't pinpoint why they feel off. Mood is "fine" but energy is depleted.
-
-**Pulse Action**: Weekly LLM narrative reveals correlation between late-night screen time spikes, next-day calendar fragmentation, and mood dips 48 hours later.
+**What he needed:** Something that reads meeting density + recovery gaps + mood drift *together*, before the crash.
 
 ---
 
-### Peer Support Discovery
+### 🛌 Mira, 31 — PhD Candidate, Amsterdam
 
-**Scenario**: User experiencing burnout symptoms, unsure where to start.
+> *"Her circadian rhythm shifted 3.2 hours over five months. She thought it was dissertation stress."*
 
-**Pulse Action**: Constellation matches them with a peer who recovered from a similar behavioral fingerprint (calendar overload + sleep debt + social withdrawal). 30-minute anonymous session provides lived experience and validation.
+Her wearable gave weekly averages — numbers with no narrative. The hidden pattern: every 45-min rightward sleep shift = 22% drop in cognitive clarity next day. She owned the data. She just couldn't read it.
+
+**What she needed:** Circadian analysis that generates a *plain-English narrative* with one actionable intervention — not another chart.
 
 ---
 
-### Episode Analysis
+### 🤝 James, 34 — Co-founder, London
 
-**Scenario**: User wants to understand past decline to prevent future recurrence.
+> *"He knew all the warning signs. He still couldn't stop. What he needed wasn't information."*
 
-**Pulse Action**: Episode replay visualizes behavioral data from low-mood periods, allows saving as "warning signature" for future drift detection.
+He searched for someone who had been in the same place — same calendar collapse, same sleep data. Not a therapist following a protocol. Not a generic support group. He called it "finding a needle in a haystack while the haystack is on fire."
+
+**What he needed:** Anonymous peer matching on *behavioral fingerprint* — connected to someone who recovered from a statistically similar pattern.
+
+---
+
+### 🧩 Priya, 29 — UX Designer, Mumbai
+
+> *"Mood: fine. Sleep: mostly okay. Work: manageable. But something was wrong."*
+
+She kept a mood journal — it captured states, not causes. Hidden thread: late-night screen time spike → fragmented next-day calendar → mood dip 48h later. A two-day lag that no journal can surface on its own.
+
+**What she needed:** Cross-source behavioral correlation that finds lagged relationships human introspection misses.
+
+---
+
+## How Pulse Solves This
+
+### 📅 For Arjun — Calendar Intelligence + Drift Detection
+
+Pulse doesn't just count meetings. It tracks:
+
+- 🗓️ **Meeting density score** — total event hours, normalized daily
+- 🧩 **Calendar fragmentation** — average uninterrupted focus blocks
+- 🌙 **Boundary violations** — after-hours events, frequency and trend
+- ⚡ **Drift alert** — when your 14-day window diverges from your baseline, Pulse flags it with confidence score, watch signals, and always-visible professional resources
+
+**The system notices before Arjun does.**
+
+---
+
+### 🛌 For Mira — Sleep & Circadian Analysis
+
+Wearables give you numbers. Pulse gives you a narrative:
+
+- 📡 **Device integrations**: Oura Ring, Fitbit, Google Fit, manual entry
+- 🔄 **Circadian consistency** — nightly variation in sleep onset and wake time
+- 💤 **Sleep debt** — rolling deficit vs. personal baseline
+- 🌞 **Social jetlag** — weekday vs. weekend sleep timing divergence
+- 🧠 **LLM circadian narrative** — 7-day reading → one specific micro-intervention, in plain English
+
+**Not more data. Language for what the data has been saying.**
+
+---
+
+### � For Priya — Cross-Source Correlation + LLM Insight
+
+The human brain can't detect two-day lags across three data sources. Pulse can:
+
+- 📊 **Pearson + lagged correlation** across sleep × calendar × mood × screen time
+- 🔍 Detects 48-hour lag relationships human introspection misses
+- 🧠 **Weekly LLM pattern analysis** — 30 days of features → strongest correlation, lag relationship, 3-paragraph narrative, one time-specific intervention point
+
+### 🤝 For James — Constellation: Peer-to-Peer Support
+
+Most support systems match you by age, location, or diagnosis. Constellation matches you by behavioral pattern — the data signature of what you're actually experiencing.
+
+**How it works:**
+
+1. **Safety First** — Before entering the pool, we check for crisis indicators (severe drift scores, sustained low mood, crisis keywords). If detected, we show professional resources immediately.
+2. **Behavioral Fingerprinting** — Your last 14 days of data (calendar patterns, sleep consistency, mood trajectory, circadian rhythm, screen time, correlation strength) gets encoded into a 6-dimensional vector stored in pgvector.
+3. **Smart Matching** — When you opt in, we run cosine similarity against the peer pool. Scoring is 70% behavioral similarity ("your patterns look like mine did") + 30% temporal overlap ("I was where you are 3-6 months ago").
+4. **AI-Generated Context** — Before the session, an LLM reads both fingerprints and generates 2-3 sentences of warm context: "You're both experiencing calendar fragmentation with late-night recovery attempts. One of you has been through this pattern and came out the other side."
+5. **Anonymous WebRTC Session** — 45-minute peer-to-peer video/audio call. No server recording. No content logging. Just two people, one pattern, zero judgment.
+6. **Ephemeral by Design** — Session ends, connection closes, no chat history, no replay. Only metadata logged: session start/end, peer IDs (hashed), rating (1-5).
+
+**Why this matters:** Therapists follow protocols. Hotlines follow scripts. But someone who survived your *exact* behavioral collapse? They know the 2am thoughts, the meeting dread, the "I'm fine" lies. That's not a hotline. That's a lifeline.
+
+---
+
+## What Pulse Does
+
+**Layer 1: Behavioral Intelligence** — Calendar sync (Google), mood check-ins, meeting density analysis, boundary violation tracking, correlation detection across all data sources.
+
+**Layer 2: Sleep & Circadian** — Integrations with Oura, Fitbit, Google Fit, or manual logging. Tracks sleep debt, circadian consistency, social jetlag. Generates plain-English interventions.
+
+**Layer 3: Screen Time** — Browser extension (Chrome/Firefox) that tracks domain categories only, never URLs. Local-first, batched sync every 60s.
+
+**Layer 4: Drift Detection** — 6-dimensional behavioral fingerprint per day. Compares your 14-day window to baseline via pgvector. Flags drift before crisis.
+
+**Layer 5: Constellation (P2P Matching)** — Behavioral peer matching with safety checks, WebRTC sessions, zero content retention. See detailed section above.
 
 ---
 
@@ -90,104 +140,83 @@ Pulse aggregates passive behavioral data to detect early warning signals and con
 
 ### Frontend
 
-- **Framework**: Next.js 14 (App Router)
-- **Styling**: CSS Modules, vanilla CSS (no frameworks)
-- **UI**: Chart.js (time series), D3.js (correlations, network graphs)
-- **Auth**: Supabase Auth (anonymous + magic link)
-- **Real-time**: Supabase Realtime, WebRTC (peer sessions)
+- **Next.js 14** (App Router) — React framework
+- **Tailwind CSS** + CSS Modules — styling
+- **Chart.js** — timeline visualizations
+- **D3.js** — correlation matrices
+- **Three.js** — 3D landing page animations
+- **Supabase Auth** — anonymous + magic link auth
 
 ### Backend
 
-- **Language**: Go 1.21+
-- **Framework**: Chi (routing), standard library
-- **Deployment**: Render (single backend: API + cron + WebRTC signaling)
-- **OAuth**: Google Calendar API (official Go client)
-- **Scheduling**: Chi cron (weekly reports, drift checks)
+- **Go 1.22** — API server
+- **Chi router** — HTTP routing
+- **Supabase Postgres 15** — main database
+- **pgvector** — vector similarity for peer matching
+- **JWT (HS256)** — authentication tokens
+- **Row-Level Security (RLS)** — database-level access control
+- **WebSocket (gorilla/websocket)** — Constellation signaling
 
-### Database & Storage
+### AI & Integrations
 
-- **Primary DB**: Supabase (Postgres 15 + pgvector)
-- **Auth**: Supabase Auth (anonymous, magic link)
-- **Storage**: Supabase Storage (embeddings, user exports)
-- **Security**: Row-Level Security (RLS) on all tables
+- **Groq (llama-3.1-70b)** — primary LLM (pattern analysis, insights)
+- **Cerebras** — LLM failover
+- **Google Calendar API** — calendar sync
+- **Oura Cloud API** — sleep data
+- **Fitbit OAuth** — sleep data
+- **Google Fit** — sleep data
 
-### AI/ML
+### Infrastructure
 
-- **LLM Primary**: Groq (llama-3.1-70b)
-- **LLM Fallback**: Cerebras (same prompts, failover)
-- **Embeddings**: OpenAI `text-embedding-3-small` or Voyage AI (TBD)
-- **Vector Search**: pgvector (cosine similarity for drift + peer matching)
+- **Render** — deployment (API + cron + WebSocket)
+- **Supabase** — managed Postgres + Auth
 
-### Browser Extension
-
-- **Platforms**: Chrome, Firefox (Manifest V3)
-- **Local-First**: Events batched locally every 60s, aggregated before send
-- **Privacy**: No raw URLs or content sent to backend—only domain categories and time-on-site
-- **Optional**: Layer 1 (calendar + mood) works without it
-
----
-
-## Architecture Highlights
-
-### Data Flow
+### Database Schema
 
 ```
-User devices (browser + extension) 
-  → Go API (feature extraction, OAuth, drift scoring)
-  → Supabase (Postgres + pgvector + Auth + RLS)
-  → LLM (Groq → Cerebras fallback)
-  → Dashboard (visualizations + insights + peer matching)
+001_layer1.sql        users, oauth_tokens, calendar_events, daily_features,
+                      mood_logs, llm_insights, sync_log
+002_sleep_tables.sql  sleep_sessions, circadian_features, circadian_insights
+003_constellation.sql peer_pool (vector(6)), constellation_sessions,
+                      constellation_session_log
 ```
 
-### 5 LLM Inference Calls
+**LLM Usage (5 specific calls):**
 
-1. **Pattern Analysis** (weekly): 30-day features + mood → behavioral patterns, lag correlations, plain English summary
-2. **Circadian Narrative** (weekly): Sleep consistency + debt → one micro-intervention
-3. **Predictive Warning** (drift alert): Current trajectory + historical episodes → confidence score, watch signals
-4. **Weekly Report** (Friday): Correlations + mood trends → 3-paragraph insight
-5. **Match Context** (Constellation): Seeker + supporter anonymized patterns → warm session framing
+1. **Pattern Analysis** (weekly) — 30-day behavioral narrative
+2. **Circadian Narrative** (weekly) — sleep intervention suggestions
+3. **Predictive Warning** (on drift) — confidence score + watch signals
+4. **Weekly Report** (Friday) — 3-paragraph correlation insight
+5. **Match Context** (Constellation) — warm P2P session framing
 
-### Privacy Guarantees
-
-- **No raw data storage**: Extension sends aggregated domain categories, not URLs
-- **User-scoped access**: RLS ensures users can only query their own rows
-- **No session recording**: Peer sessions via WebRTC, no backend logging
-- **Transparent AI**: Every LLM card includes "AI-generated, not a diagnosis" disclaimer
-- **Crisis-safe**: Drift alerts always include professional support links
+All AI outputs labeled "AI-generated, not clinical advice."
 
 ---
 
-## Differentiation
+## Privacy & Ethics
 
-| **vs. Mood Trackers** | Adds passive behavioral context (calendar, sleep, browsing) instead of mood-only logs |
-| **vs. Wearables-Only Apps** | Multi-source correlation and LLM narrative generation |
-| **vs. Therapy Platforms** | Early signal detection + peer connection, not a replacement for professionals |
-| **vs. Generic Support Groups** | Peer matching on **behavioral fingerprint** (recovered-from-similar-pattern), not demographics |
+- 🔐 **Anonymous by default** — no email required
+- 🚫 **No raw data storage** — browser extension sends domain categories only, never URLs or page content
+- 📵 **No session recording** — peer sessions use WebRTC, zero content logging, ephemeral by design
+- 🔒 **Row-Level Security** — database enforces that users can only access their own data
+- 🏷️ **Transparent AI** — every LLM output labeled "AI-generated, not clinical advice"
+- 🆘 **Crisis-safe** — professional resources visible in every drift alert, never paywalled
+- 🗑️ **Full data export + deletion** — one-click JSON export and account deletion
 
-**Core Bet**: Behavioral data already signals decline weeks before people seek help. Connecting that signal to peer support shortens the path from "I'm not okay" to "I found someone who gets it."
-
----
-
-## Ethical Commitments
-
-1. **Anonymous by default** — No email required; magic link or anonymous session
-2. **No medical claims** — "Insight and support," never diagnosis or treatment
-3. **Crisis escalation** — Always offer professional resources; never block user choice
-4. **Opt-in peer matching** — Constellation is optional; opt-out anytime
-5. **Transparent AI** — All LLM outputs labeled as AI-generated, not clinical advice
-6. **User control** — One-click data export (JSON) and delete
+**We provide insight and peer support, not diagnosis or treatment.**
 
 ---
 
-## Build Layers (Incremental Delivery)
+## Why Pulse Is Different
 
-1. **Layer 1**: Calendar + Mood + Correlation + LLM insight *(MVP)*
-2. **Layer 2**: Sleep tracking + Circadian analysis
-3. **Layer 3**: Browser extension + Screen time features
-4. **Layer 4**: Embeddings + Drift detection (pgvector)
-5. **Layer 5**: Peer matching + WebRTC (Constellation)
-
-Dependencies are sequential: Layer 4 requires features from 1-3; Layer 5 requires embeddings and drift from Layer 4.
+| Feature | Pulse | Mood Trackers | Wearables | Therapy Apps |
+|---|:---:|:---:|:---:|:---:|
+| Passive behavioral data | ✅ | ❌ | partial | ❌ |
+| Cross-source correlation | ✅ | ❌ | ❌ | ❌ |
+| LLM narrative (not just charts) | ✅ | ❌ | ❌ | ❌ |
+| Drift detection before crisis | ✅ | ❌ | ❌ | ❌ |
+| Peer match on behavioral pattern | ✅ | ❌ | ❌ | ❌ |
+| Anonymous — no account required | ✅ | ❌ | ❌ | ❌ |
 
 ---
 
@@ -195,128 +224,87 @@ Dependencies are sequential: Layer 4 requires features from 1-3; Layer 5 require
 
 ### Prerequisites
 
-- Node.js 18+
-- Go 1.22+
-- Supabase account (free tier works)
-- Groq API key (free at [console.groq.com](https://console.groq.com))
-- Google Cloud project with Calendar API enabled (for calendar sync)
+- **Node.js 18+** and **Go 1.22+**
+- **Supabase account** (free tier works)
+- **Groq API key** — free at [console.groq.com](https://console.groq.com)
+- **Google Cloud project** with Calendar API enabled
 
----
+### Step 1 — Database Setup 🗄️
 
-### Step 1 — Database
+Run these migrations in your **Supabase SQL Editor**, in order:
 
-Run the migration SQL files in your **Supabase SQL Editor** (project → SQL Editor), in order:
-
-1. `backend/internal/db/migrations/001_layer1.sql` — core tables (users, mood, calendar, features, insights)
-2. `backend/internal/db/migrations/002_sleep_tables.sql` — sleep and circadian tables
-
----
-
-### Step 2 — Backend environment
-
-```bash
-cd backend
-cp .env.example .env
+```sql
+backend/internal/db/migrations/001_layer1.sql
+backend/internal/db/migrations/002_sleep_tables.sql
+backend/internal/db/migrations/003_constellation.sql
 ```
 
-Open `backend/.env` and fill in your values:
+💡 **Tip**: For 30 days of demo data, run `seed-demo.sql` after your first sign-in.
 
-```env
-# Required — Supabase
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_KEY=your-service-role-key
-SUPABASE_JWT_SECRET=your-jwt-secret
-DATABASE_URL=postgresql://postgres:your-password@db.your-project.supabase.co:5432/postgres
+### Step 2 — Backend Configuration ⚙️
 
-# Required — Google OAuth (Calendar)
-GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-client-secret
-GOOGLE_REDIRECT_URI=http://localhost:8080/api/v1/calendar/callback
+1. Copy the example environment file:
 
-# Required — LLM (Groq primary, Cerebras fallback)
-GROQ_API_KEY=gsk_your-groq-key
-CEREBRAS_API_KEY=your-cerebras-key
+   ```bash
+   cd backend && cp .env.example .env
+   ```
 
-# Optional — Sleep providers (Layer 2)
-OURA_PERSONAL_TOKEN=           # from cloud.ouraring.com/personal-access-tokens
-FITBIT_CLIENT_ID=              # from dev.fitbit.com
-FITBIT_CLIENT_SECRET=
-```
+2. Fill in your environment variables:
 
-> The server starts without Google/LLM/sleep keys — only those features will be unavailable until configured.
+   ```env
+   SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_ANON_KEY=
+   SUPABASE_SERVICE_KEY=
+   SUPABASE_JWT_SECRET=
+   DATABASE_URL=postgresql://postgres:password@db.your-project.supabase.co:5432/postgres
 
----
+   GOOGLE_CLIENT_ID=
+   GOOGLE_CLIENT_SECRET=
+   GOOGLE_REDIRECT_URI=http://localhost:8080/api/v1/calendar/callback
 
-### Step 3 — Frontend environment
+   GROQ_API_KEY=
+   CEREBRAS_API_KEY=
 
-Create `src/.env.local` (or `.env.local` in the project root):
+   # Optional — sleep providers
+   OURA_PERSONAL_TOKEN=
+   FITBIT_CLIENT_ID=
+   FITBIT_CLIENT_SECRET=
+   ```
+
+### Step 3 — Frontend Configuration 🖥️
+
+Create `.env.local` in the root directory:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ```
 
----
+### Step 4 — Running the App 🚀
 
-### Step 4 — Install frontend dependencies
+You can run both the backend and frontend together:
 
 ```bash
-# From the project root
+# Install dependencies
 npm install
-# or
-bun install
-```
 
----
+# Terminal 1 — Go backend (port 8080)
+cd backend && go run ./cmd/server
 
-### Step 5 — Run (two terminals)
-
-**Terminal 1 — Go backend** (port 8080):
-
-```bash
-cd backend
-go run ./cmd/server
-```
-
-**Terminal 2 — Next.js frontend** (port 3000):
-
-```bash
+# Terminal 2 — Next.js frontend (port 3000)
 npm run dev
-# or
-bun dev
 ```
 
----
+Visit `http://localhost:3000` 🎉
 
-### Where things run
+**Key Routes:**
 
-| URL | What |
-|-----|------|
-| `http://localhost:8080/connect` | Onboarding — create session, connect Google Calendar, sync |
-| `http://localhost:8080/log` | Daily mood check-in |
-| `http://localhost:8080/dashboard` | Main dashboard — timeline, correlations, AI insights |
-| `http://localhost:8080/circadian` | Sleep health — timeline, narrative, manual sleep log |
-| `http://localhost:3000` | Next.js frontend |
-| `http://localhost:8080/health` | API health check |
-
----
-
-### Other useful commands
-
-```bash
-# Build backend binary
-cd backend && go build -o bin/server ./cmd/server
-
-# Run Go tests
-cd backend && go test ./...
-
-# Tidy Go modules
-cd backend && go mod tidy
-
-# Build frontend for production
-npm run build && npm start
-```
+- `/` — Landing page
+- `/auth` — Sign in
+- `/dashboard` — Main dashboard (timeline, metrics, insights)
+- `/dashboard/sleep` — Sleep & circadian analysis
+- `/dashboard/constellation` — Peer matching
+- `/log` — Mood check-in
 
 ---
 
@@ -324,46 +312,43 @@ npm run build && npm start
 
 ```
 pulse/
-├── src/
-│   ├── app/              # Next.js App Router pages
-│   ├── components/       # UI components
-│   └── lib/              # API client, Supabase helpers, types
-├── backend/
-│   ├── cmd/server/       # Entry point (main.go)
+├── src/                           # Next.js Frontend
+│   ├── app/
+│   │   ├── dashboard/             Main dashboard, sleep, circadian, constellation
+│   │   ├── log/                   Mood check-in
+│   │   └── auth/                  Authentication
+│   ├── components/                UI components (Hero, charts, forms)
+│   └── lib/                       API client, types, utilities
+│
+├── backend/                       # Go API
+│   ├── cmd/server/                Entry point
 │   ├── internal/
-│   │   ├── api/          # HTTP handlers (calendar, mood, dashboard, insights, sleep, circadian)
-│   │   ├── collectors/
-│   │   │   ├── google/   # Google Calendar OAuth + event fetching
-│   │   │   └── sleep/    # Oura, Fitbit, Google Fit, manual entry
-│   │   ├── correlation/  # Pearson, lagged correlation, significance, matrix
-│   │   ├── db/           # Database layer + migrations/
-│   │   ├── features/
-│   │   │   ├── calendar/ # Meeting density, fragmentation, focus blocks
-│   │   │   └── circadian/# Rhythm consistency, sleep debt, social jetlag
-│   │   ├── llm/          # Groq/Cerebras clients, pattern analysis, circadian narrative
-│   │   ├── middleware/   # Auth (JWT), CORS, logger, recover
-│   │   ├── pipeline/     # Sync orchestration, cron scheduler
-│   │   └── config/       # Environment config
-│   ├── web/              # Standalone HTML UI served by Go
-│   │   ├── connect.html  # Onboarding (session → OAuth → sync)
-│   │   ├── log.html      # Daily mood check-in
-│   │   ├── dashboard.html# Main dashboard (Chart.js timeline + insights)
-│   │   └── circadian.html# Sleep health + narrative
-│   ├── .env.example      # All environment variables documented
-│   ├── Makefile          # dev, build, test, tidy targets
-│   └── go.mod
-├── public/               # Static assets
-└── package.json
+│   │   ├── api/                   REST endpoints
+│   │   ├── constellation/         Peer matching engine
+│   │   ├── correlation/           Statistical analysis
+│   │   ├── features/              Calendar & circadian extraction
+│   │   ├── llm/                   AI insight generation
+│   │   └── db/                    Database + migrations
+│   └── web/                       Standalone HTML views
+│
+└── seed-demo.sql                  30-day demo data
 ```
-
----
-
-## License
-
-MIT
 
 ---
 
 ## Disclaimer
 
-**Pulse is not a medical device or diagnostic tool.** It provides behavioral insights and peer support, not professional mental health treatment. Always consult licensed healthcare providers for medical advice. In crisis, contact emergency services or a crisis hotline immediately.
+**Pulse is not a medical device.** It provides behavioral insight and anonymous peer connection — not diagnosis or treatment.
+
+Always consult licensed healthcare providers for clinical concerns. If you are in crisis, contact emergency services or a crisis line immediately — Pulse will always show you how.
+
+---
+
+<div align="center">
+
+*Built for the Arjuns and Miras and Jameses and Priyas*  
+*— the ones whose data knew before they did*
+
+**Made with ❤️ for mental health**
+
+</div>
