@@ -24,6 +24,12 @@ This isn't another mood tracker that asks "how do you feel?" and stops there. Th
 
 **Mental health tools are built around symptoms. Pulse is built around signals.**
 
+<div align="center">
+
+![The Gap](public/1.png)
+
+</div>
+
 ---
 
 ## The Problem — Four Real Stories
@@ -120,6 +126,12 @@ Most support systems match you by age, location, or diagnosis. Constellation mat
 
 **Why this matters:** Therapists follow protocols. Hotlines follow scripts. But someone who survived your *exact* behavioral collapse? They know the 2am thoughts, the meeting dread, the "I'm fine" lies. That's not a hotline. That's a lifeline.
 
+<div align="center">
+
+![How Pulse Works](public/2.png)
+
+</div>
+
 ---
 
 ## What Pulse Does
@@ -133,6 +145,24 @@ Most support systems match you by age, location, or diagnosis. Constellation mat
 **Layer 4: Drift Detection** — 6-dimensional behavioral fingerprint per day. Compares your 14-day window to baseline via pgvector. Flags drift before crisis.
 
 **Layer 5: Constellation (P2P Matching)** — Behavioral peer matching with safety checks, WebRTC sessions, zero content retention. See detailed section above.
+
+<div align="center">
+
+![Dashboard](public/3.png)
+
+*One dashboard. Four data sources. Finally connected.*
+
+</div>
+
+---
+
+<div align="center">
+
+![Constellation](public/4.png)
+
+*The hardest part isn't the pattern. It's feeling like nobody else has been through it.*
+
+</div>
 
 ---
 
@@ -204,6 +234,14 @@ All AI outputs labeled "AI-generated, not clinical advice."
 - 🗑️ **Full data export + deletion** — one-click JSON export and account deletion
 
 **We provide insight and peer support, not diagnosis or treatment.**
+
+<div align="center">
+
+![Privacy](public/5.png)
+
+*Everything runs on your data. Nothing runs on your identity.*
+
+</div>
 
 ---
 
